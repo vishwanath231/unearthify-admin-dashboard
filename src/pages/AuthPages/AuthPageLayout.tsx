@@ -1,6 +1,6 @@
 import React from "react";
 // import ThemeTogglerTwo from "../../components/common/ThemeTogglerTwo";
-import AuthPageLayoutImg from "../../assets/AuthPageLayoutImg.jpg"
+import AuthPageLayoutImg from "../../assets/AuthPageLayoutImg.jpg";
 
 export default function AuthLayout({
   children,

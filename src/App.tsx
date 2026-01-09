@@ -24,6 +24,7 @@ import Artists from "./pages/Artists/ArtistsList";
 import AddArtists from "./components/Artists/AddArtists";
 // import BasicTableOne from "./components/tables/BasicTables/BasicTableOne";
 import { Toaster } from "react-hot-toast";
+import ProtectedRoute from "./pages/AuthPages/ProtectedRoute";
 
 export default function App() {
   return (
@@ -33,7 +34,11 @@ export default function App() {
         <ScrollToTop />
         <Routes>
           {/* Dashboard Layout */}
-          <Route element={<AppLayout />}>
+          <Route element={
+            <ProtectedRoute>
+              <AppLayout />
+            </ProtectedRoute>
+          }>
             <Route index path="/" element={<Home />} />
 
             {/* Others Page */}

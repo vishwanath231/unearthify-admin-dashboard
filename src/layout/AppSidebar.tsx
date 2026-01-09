@@ -42,7 +42,11 @@ const navItems: NavItem[] = [
   {
     icon: <FaPalette />,
     name: "Art Forms",
-    path: "/profile",
+    subItems: [
+      { name: "Art Category Form", path: "", pro: false },
+      { name: "Art Type form", path: "", pro: false },
+      { name: "About Art", path: "", pro: false },
+    ],
   },
   {
     name: "Events",
