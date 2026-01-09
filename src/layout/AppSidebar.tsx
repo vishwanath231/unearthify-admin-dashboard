@@ -33,7 +33,11 @@ const navItems: NavItem[] = [
   {
     icon: <FaUser />,
     name: "Artists",
-    path: "/calendar",
+    path: "/artists",
+    subItems: [
+      { name: "Artists List", path: "/artists", pro: false },
+      { name: "Add Artists", path: "/artists/add", pro: false },
+    ],
   },
   {
     icon: <FaPalette />,

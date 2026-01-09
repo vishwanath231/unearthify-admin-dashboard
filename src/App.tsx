@@ -20,11 +20,15 @@ import Home from "./pages/Dashboard/Home";
 import UserProfiles from "./pages/UserProfiles";
 import FormElements from "./pages/Forms/FormElements";
 import BasicTables from "./pages/Tables/BasicTables";
+import Artists from "./pages/Artists/ArtistsList";
+import AddArtists from "./components/Artists/AddArtists";
 // import BasicTableOne from "./components/tables/BasicTables/BasicTableOne";
+import { Toaster } from "react-hot-toast";
 
 export default function App() {
   return (
     <>
+     <Toaster position="top-right" reverseOrder={false} />
       <Router>
         <ScrollToTop />
         <Routes>
@@ -34,7 +38,8 @@ export default function App() {
 
             {/* Others Page */}
             <Route path="/profile" element={<UserProfiles/>} />
-            <Route path="/calendar" element={""} />
+            <Route path="/artists" element={<Artists/>} />
+            <Route path="/artists/add" element={<AddArtists/>} />
             <Route path="/blank" element={<Blank />} />
 
             {/* Forms */}
