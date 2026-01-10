@@ -146,7 +146,7 @@ function AddArtists() {
   };
 
   return (
-    <div className="p-0 max-w-6xl mx-auto">
+    <div className="relative bg-white p-4 rounded-lg shadow">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-semibold mb-6">Add Artist</h2>
       </div>

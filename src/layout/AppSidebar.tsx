@@ -43,15 +43,21 @@ const navItems: NavItem[] = [
     icon: <FaPalette />,
     name: "Art Forms",
     subItems: [
-      { name: "Art Category Form", path: "", pro: false },
-      { name: "Art Type form", path: "", pro: false },
-      { name: "About Art", path: "", pro: false },
+      { name: "Categories List", path: "/categories-list", pro: false },
+      { name: "Add Categories", path: "/categories/add", pro: false },
+      { name: "Art Type List", path: "/arttypes-list", pro: false },
+      { name: "Add Art Type", path: "/arttypes/add", pro: false },
+      { name: "Art Details List", path: "/art-details", pro: false },
+      { name: "Add Art Details", path: "/art-details/add", pro: false },
     ],
   },
   {
     name: "Events",
     icon: <FaFlag />,
-    subItems: [{ name: "Form Elements", path: "/form-elements", pro: false }],
+    subItems: [
+      { name: "Event List", path: "/events", pro: false },
+      { name: "Add Event", path: "/events/add", pro: false },
+    ],
   },
   {
     name: "Contribute",

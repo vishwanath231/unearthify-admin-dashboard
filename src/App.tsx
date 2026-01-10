@@ -3,28 +3,39 @@ import SignIn from "./pages/AuthPages/SignIn";
 import SignUp from "./pages/AuthPages/SignUp";
 import NotFound from "./pages/OtherPage/NotFound";
 // import UserProfiles from "./pages/UserProfiles";
-import Videos from "./pages/UiElements/Videos";
-import Images from "./pages/UiElements/Images";
-import Alerts from "./pages/UiElements/Alerts";
-import Badges from "./pages/UiElements/Badges";
-import Avatars from "./pages/UiElements/Avatars";
-import Buttons from "./pages/UiElements/Buttons";
-import LineChart from "./pages/Charts/LineChart";
-import BarChart from "./pages/Charts/BarChart";
+// import Videos from "./pages/UiElements/Videos";
+// import Images from "./pages/UiElements/Images";
+// import Alerts from "./pages/UiElements/Alerts";
+// import Badges from "./pages/UiElements/Badges";
+// import Avatars from "./pages/UiElements/Avatars";
+// import Buttons from "./pages/UiElements/Buttons";
+// import LineChart from "./pages/Charts/LineChart";
+// import BarChart from "./pages/Charts/BarChart";
 // import BasicTables from "./pages/Tables/BasicTables";
 // import FormElements from "./pages/Forms/FormElements";
-import Blank from "./pages/Blank";
+// import Blank from "./pages/Blank";
 import AppLayout from "./layout/AppLayout";
 import { ScrollToTop } from "./components/common/ScrollToTop";
 import Home from "./pages/Dashboard/Home";
-import UserProfiles from "./pages/UserProfiles";
-import FormElements from "./pages/Forms/FormElements";
-import BasicTables from "./pages/Tables/BasicTables";
+// import UserProfiles from "./pages/UserProfiles";
+// import FormElements from "./pages/Forms/FormElements";
+// import BasicTables from "./pages/Tables/BasicTables";
 import Artists from "./pages/Artists/ArtistsList";
 import AddArtists from "./components/Artists/AddArtists";
 // import BasicTableOne from "./components/tables/BasicTables/BasicTableOne";
 import { Toaster } from "react-hot-toast";
 import ProtectedRoute from "./pages/AuthPages/ProtectedRoute";
+// import CategoryPage from "./pages/ArtForms/Categories/AddCategory";
+// import ArtFormsPage from "./pages/ArtForms/ArtTypes/AddArtTypes";
+// import ArtFormDetails from "./pages/ArtForms/ArtFormDetail";
+import CategoriesList from "./pages/ArtForms/Categories/CategoriesList";
+import AddCategories from "./pages/ArtForms/Categories/AddCategory";
+import ArtTypesLists from "./pages/ArtForms/ArtTypes/ArtTypesLists";
+import AddArtTypes from "./pages/ArtForms/ArtTypes/AddArtTypes";
+import ArtDetailLists from "./pages/ArtForms/ArtDetails/ArtDetailsLists";
+import AddArtDetails from "./pages/ArtForms/ArtDetails/AddArtDetails";
+import EventsLists from "./pages/Events/EventsLists";
+import AddEvents from "./pages/Events/AddEvents";
 
 export default function App() {
   return (
@@ -42,28 +53,40 @@ export default function App() {
             <Route index path="/" element={<Home />} />
 
             {/* Others Page */}
-            <Route path="/profile" element={<UserProfiles/>} />
+            {/* <Route path="/profile" element={<UserProfiles/>} /> */}
             <Route path="/artists" element={<Artists/>} />
             <Route path="/artists/add" element={<AddArtists/>} />
-            <Route path="/blank" element={<Blank />} />
+            {/* <Route path="/blank" element={<Blank />} /> */}
+
+            {/* Art Forms */}
+            <Route path="/categories-list" element={<CategoriesList/>} />
+            <Route path="/categories/add" element={<AddCategories/>} />
+            <Route path="/arttypes-list" element={<ArtTypesLists/>} />
+            <Route path="/arttypes/add" element={<AddArtTypes/>} />
+            <Route path="/art-details" element={<ArtDetailLists/>} />
+            <Route path="/art-details/add" element={<AddArtDetails/>} />
+
+            {/* Events */}
+            <Route path="/events" element={<EventsLists/>} />
+            <Route path="/events/add" element={<AddEvents/>} />
 
             {/* Forms */}
-            <Route path="/form-elements" element={<FormElements/>} />
+            {/* <Route path="/form-elements" element={<FormElements/>} /> */}
 
             {/* Tables */}
-            <Route path="/basic-tables" element={<BasicTables/>} />
+            {/* <Route path="/basic-tables" element={<BasicTables/>} /> */}
 
             {/* Ui Elements */}
-            <Route path="/alerts" element={<Alerts />} />
+            {/* <Route path="/alerts" element={<Alerts />} />
             <Route path="/avatars" element={<Avatars />} />
             <Route path="/badge" element={<Badges />} />
             <Route path="/buttons" element={<Buttons />} />
             <Route path="/images" element={<Images />} />
-            <Route path="/videos" element={<Videos />} />
+            <Route path="/videos" element={<Videos />} /> */}
 
             {/* Charts */}
-            <Route path="/line-chart" element={<LineChart />} />
-            <Route path="/bar-chart" element={<BarChart />} />
+            {/* <Route path="/line-chart" element={<LineChart />} />
+            <Route path="/bar-chart" element={<BarChart />} /> */}
           </Route>
 
           {/* Auth Layout */}
