@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { MoreVertical } from "lucide-react";
 import { TiArrowSortedUp, TiArrowSortedDown } from "react-icons/ti";
+import { PiSlidersHorizontalBold } from "react-icons/pi";
 
 const STORAGE_KEY = "art_categories";
 const ART_FORM_KEY = "art_forms";
@@ -14,6 +15,7 @@ type ArtForm = {
   image: string;
   categoryId: string;
 };
+
 type Category = {
   id: string;
   name: string;
@@ -28,12 +30,16 @@ export default function CategoryList() {
   const [openMenu, setOpenMenu] = useState<string | null>(null);
   const [viewArt, setViewArt] = useState<ArtForm | null>(null);
 
-  // 🔥 SORT STATE
   const [sortKey, setSortKey] = useState<"name" | "count" | "">("");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
 
+  const [filterOpen, setFilterOpen] = useState(false);
+  const [tempCategory, setTempCategory] = useState("");
+  const [appliedCategory, setAppliedCategory] = useState("");
+
   const navigate = useNavigate();
 
+  /* ---------- LOAD ---------- */
   function load() {
     const catData = localStorage.getItem(STORAGE_KEY);
     const artData = localStorage.getItem(ART_FORM_KEY);
@@ -54,7 +60,20 @@ export default function CategoryList() {
     };
   }, []);
 
-  /* ---------- OUTSIDE CLICK ---------- */
+  /* ---------- OUTSIDE CLICK FILTER ---------- */
+  useEffect(() => {
+    function handler(e: MouseEvent) {
+      const target = e.target as HTMLElement;
+      if (!target.closest(".filter-box") && !target.closest(".filter-btn")) {
+        setFilterOpen(false);
+      }
+    }
+
+    if (filterOpen) document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [filterOpen]);
+
+  /* ---------- OUTSIDE CLICK MENU ---------- */
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
@@ -69,12 +88,25 @@ export default function CategoryList() {
     return artForms.filter((a) => a.categoryId === categoryId);
   }
 
+  const clearFilters = () => {
+    setAppliedCategory("");
+    setTempCategory("");
+    setFilterOpen(false);
+  };
+
   /* ---------- FILTER + SORT ---------- */
   const filteredCategories = categories
-    .filter((cat) =>
-      cat.name.toLowerCase().includes(search.toLowerCase()) ||
-      cat.description.toLowerCase().includes(search.toLowerCase())
-    )
+    .filter((cat) => {
+      const matchesSearch =
+        cat.name.toLowerCase().includes(search.toLowerCase()) ||
+        cat.description.toLowerCase().includes(search.toLowerCase());
+
+      const matchesCategory = appliedCategory
+        ? cat.name === appliedCategory
+        : true;
+
+      return matchesSearch && matchesCategory;
+    })
     .sort((a, b) => {
       if (!sortKey) return 0;
 
@@ -115,14 +147,65 @@ export default function CategoryList() {
 
       <hr className="my-3" />
 
-      {/* SEARCH */}
-      <input
-        type="text"
-        placeholder="Search by name or description..."
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        className="border px-3 py-2 rounded-lg w-full sm:w-72 focus:ring-2 focus:ring-[#83261D] outline-none mb-4"
-      />
+      {/* SEARCH + FILTER */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-5">
+        <input
+          type="text"
+          placeholder="Search by name or description..."
+          value={search} 
+          onChange={(e) => setSearch(e.target.value)}
+          className="border px-3 py-2 rounded-lg w-full sm:w-72 focus:ring-2 focus:ring-[#83261D] outline-none"
+        />
+
+        <div className="flex items-center gap-2 relative">
+            <button
+              onClick={clearFilters}
+              className="px-4 py-2 text-sm text-[#83261D] border border-red-200 rounded-lg hover:bg-[#F8E7DC] whitespace-nowrap">
+              Clear Filter
+            </button>
+
+          <button
+            onClick={() => setFilterOpen(!filterOpen)}
+            className="flex items-center gap-2 border px-4 py-2 rounded-xl w-fit filter-btn">
+            <PiSlidersHorizontalBold />Filter
+          </button>
+
+          {filterOpen && (
+            <div className="absolute top-full right-0 mt-2 w-72 bg-white border rounded-xl shadow-xl p-4 z-30 filter-box">
+              <p className="text-sm font-semibold mb-2">Filter by Category</p>
+
+              <select
+                value={tempCategory}
+                onChange={(e) => setTempCategory(e.target.value)}
+                className="w-full border rounded-lg px-3 py-2 mb-4">
+                <option value="">All Categories</option>
+                {categories.map((c) => (
+                  <option key={c.id} value={c.name}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+
+              <div className="flex justify-end gap-2">
+                <button
+                  onClick={clearFilters}
+                  className="px-3 py-1.5 border rounded-lg text-sm">
+                  Cancel
+                </button>
+
+                <button
+                  onClick={() => {
+                    setAppliedCategory(tempCategory);
+                    setFilterOpen(false);
+                  }}
+                  className="px-3 py-1.5 bg-[#83261D] text-white rounded-lg text-sm">
+                  Apply
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
 
       <hr className="my-3" />
 
@@ -133,14 +216,12 @@ export default function CategoryList() {
             <tr>
               <th className="p-3 text-left">Image</th>
 
-              {/* 🔤 NAME SORT */}
               <th
                 className="p-3 text-left cursor-pointer select-none"
                 onClick={() => {
                   setSortKey("name");
                   setSortOrder(sortOrder === "asc" ? "desc" : "asc");
-                }}
-              >
+                }}>
                 <div className="flex items-center gap-1">
                   <span>Name</span>
                   <div className="flex flex-col leading-none">
@@ -166,14 +247,12 @@ export default function CategoryList() {
 
               <th className="p-3 text-left">Description</th>
 
-              {/* 🔢 NUMBER SORT */}
               <th
                 className="p-3 text-left cursor-pointer select-none"
                 onClick={() => {
                   setSortKey("count");
                   setSortOrder(sortOrder === "asc" ? "desc" : "asc");
-                }}
-              >
+                }}>
                 <div className="flex items-center gap-1">
                   <span>Art Types</span>
                   <div className="flex flex-col leading-none">
@@ -277,11 +356,9 @@ export default function CategoryList() {
         </table>
       </div>
 
-      {/* VIEW MODAL (unchanged) */}
       {viewArt && (
         <div className="fixed inset-0 soft-blur flex items-center justify-center z-50 px-4">
           <div className="bg-white w-full max-w-xl rounded-[32px] overflow-hidden relative shadow-[0_30px_70px_rgba(0,0,0,0.5)] border border-white/20 animate-in zoom-in-95 duration-300">
-            {/* ❌ ELEGANT CLOSE BUTTON */}
             <button
               onClick={() => setViewArt(null)}
               className="absolute top-5 right-5 z-50 bg-black hover:bg-[#83261D] backdrop-blur-md text-white rounded-full w-10 h-10 flex items-center justify-center transition-all duration-300 shadow-xl group border border-white/20">
@@ -300,7 +377,6 @@ export default function CategoryList() {
               </svg>
             </button>
 
-            {/* 🖼️ HERO BANNER */}
             <div className="relative h-80 w-full overflow-hidden bg-gray-100">
               <img
                 src={viewArt.image}
@@ -309,7 +385,6 @@ export default function CategoryList() {
               />
             </div>
 
-            {/* 📄 CONTENT SECTION */}
             <div className="px-10 pb-10 pt-8 relative">
               {/* Label */}
               <span className="inline-block mb-2 text-xs font-bold tracking-widest text-[#83261D] uppercase">

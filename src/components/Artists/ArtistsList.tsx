@@ -220,7 +220,7 @@ function ArtistsList() {
           )}
         </div>
 
-        <div className="flex gap-3">
+        <div className="flex gap-2">
           {/* Clear filters */}
           <button
             onClick={clearFilters}
@@ -276,7 +276,7 @@ function ArtistsList() {
               </div>
             </div>
 
-            <div className="flex justify-between items-center gap-2 mt-4">
+            <div className="flex justify-end items-center gap-2 mt-4">
               <div className="flex gap-2">
                 <button
                   onClick={() => setShowFilter(false)}

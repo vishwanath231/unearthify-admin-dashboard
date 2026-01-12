@@ -13,6 +13,11 @@ export type AppEvent = {
   imageUrl?: string;
 };
 
+type Category = {
+  id: string;
+  name: string;
+};
+
 const STORAGE_KEY = "events";
 
 export default function AddEvent() {
@@ -21,6 +26,7 @@ export default function AddEvent() {
   const editEvent = location.state as AppEvent | null;
 
   const fileRef = useRef<HTMLInputElement | null>(null);
+  const [categories, setCategories] = useState<Category[]>([]);
 
   const [form, setForm] = useState({
     name: "",
@@ -49,6 +55,12 @@ export default function AddEvent() {
       setPreviewUrl(editEvent.imageUrl || null);
     }
   }, [editEvent]);
+
+  useEffect(() => {
+  const stored = localStorage.getItem("art_categories");
+  setCategories(stored ? JSON.parse(stored) : []);
+}, []);
+
 
   /* ---------- IMAGE ---------- */
   const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -181,16 +193,20 @@ export default function AddEvent() {
               Select Category
             </label>
             <select
-              name="category"
-              value={form.category}
-              onChange={handleChange}
-              className="input bg-white">
-              <option value="">-- Select category --</option>
-              <option value="Artist Information">Artist Information</option>
-              <option value="Art Form Details">Art Form Details</option>
-              <option value="Cultural Events">Cultural Events</option>
-              <option value="Others">Others</option>
-            </select>
+  name="category"
+  value={form.category}
+  onChange={handleChange}
+  className="input bg-white"
+>
+  <option value="">-- Select category --</option>
+
+  {categories.map((c) => (
+    <option key={c.id} value={c.name}>
+      {c.name}
+    </option>
+  ))}
+</select>
+
           </div>
           <div className="flex flex-col gap-1">
             <label className="text-sm font-medium text-gray-700">

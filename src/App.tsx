@@ -30,8 +30,6 @@ import ProtectedRoute from "./pages/AuthPages/ProtectedRoute";
 // import ArtFormDetails from "./pages/ArtForms/ArtFormDetail";
 import CategoriesList from "./pages/ArtForms/Categories/CategoriesList";
 import AddCategories from "./pages/ArtForms/Categories/AddCategory";
-import ArtTypesLists from "./pages/ArtForms/ArtTypes/ArtTypesLists";
-import AddArtTypes from "./pages/ArtForms/ArtTypes/AddArtTypes";
 import ArtDetailLists from "./pages/ArtForms/ArtDetails/ArtDetailsLists";
 import AddArtDetails from "./pages/ArtForms/ArtDetails/AddArtDetails";
 import EventsLists from "./pages/Events/EventsLists";
@@ -63,8 +61,6 @@ export default function App() {
             {/* Art Forms */}
             <Route path="/categories" element={<CategoriesList/>} />
             <Route path="/categories/add" element={<AddCategories/>} />
-            <Route path="/arttypes-list" element={<ArtTypesLists/>} />
-            <Route path="/arttypes/add" element={<AddArtTypes/>} />
             <Route path="/art-details" element={<ArtDetailLists/>} />
             <Route path="/art-details/add" element={<AddArtDetails/>} />
 
