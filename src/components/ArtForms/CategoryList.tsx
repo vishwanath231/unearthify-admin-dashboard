@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
-import { MoreVertical, ChevronUp, ChevronDown } from "lucide-react";
+import { MoreVertical } from "lucide-react";
+import { TiArrowSortedUp, TiArrowSortedDown } from "react-icons/ti";
 
 const STORAGE_KEY = "art_categories";
 const ART_FORM_KEY = "art_forms";
@@ -143,7 +144,7 @@ export default function CategoryList() {
                 <div className="flex items-center gap-1">
                   <span>Name</span>
                   <div className="flex flex-col leading-none">
-                    <ChevronUp
+                    <TiArrowSortedUp
                       size={14}
                       className={
                         sortKey === "name" && sortOrder === "asc"
@@ -151,7 +152,7 @@ export default function CategoryList() {
                           : "text-gray-300"
                       }
                     />
-                    <ChevronDown
+                    <TiArrowSortedDown
                       size={14}
                       className={
                         sortKey === "name" && sortOrder === "desc"
@@ -176,7 +177,7 @@ export default function CategoryList() {
                 <div className="flex items-center gap-1">
                   <span>Art Types</span>
                   <div className="flex flex-col leading-none">
-                    <ChevronUp
+                    <TiArrowSortedUp
                       size={14}
                       className={
                         sortKey === "count" && sortOrder === "asc"
@@ -184,7 +185,7 @@ export default function CategoryList() {
                           : "text-gray-300"
                       }
                     />
-                    <ChevronDown
+                    <TiArrowSortedDown
                       size={14}
                       className={
                         sortKey === "count" && sortOrder === "desc"
