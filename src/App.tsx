@@ -61,7 +61,7 @@ export default function App() {
             {/* <Route path="/blank" element={<Blank />} /> */}
 
             {/* Art Forms */}
-            <Route path="/categories-list" element={<CategoriesList/>} />
+            <Route path="/categories" element={<CategoriesList/>} />
             <Route path="/categories/add" element={<AddCategories/>} />
             <Route path="/arttypes-list" element={<ArtTypesLists/>} />
             <Route path="/arttypes/add" element={<AddArtTypes/>} />
