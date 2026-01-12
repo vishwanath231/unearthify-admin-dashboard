@@ -147,8 +147,11 @@ function AddArtists() {
 
   return (
     <div className="relative bg-white p-4 rounded-lg shadow">
+      {/* Header */}
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-semibold mb-6">Add Artist</h2>
+        <h2 className="text-xl font-semibold">
+          {editArtist ? "Update Contribution" : ""}
+        </h2>
       </div>
 
       <div className="bg-white rounded-xl border p-5 mb-6">
@@ -227,7 +230,6 @@ function AddArtists() {
         <hr className="my-3" />
 
         <div className="flex items-center gap-4 flex-wrap">
-
           {/* Button */}
           <label className="px-4 py-2 border rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 w-fit">
             {previewUrl || existingImage ? "Change Image" : "Choose Image"}
@@ -239,7 +241,7 @@ function AddArtists() {
               className="hidden"
             />
           </label>
-          
+
           {/* Preview */}
           {previewUrl && (
             <div className="relative w-24 h-24">
@@ -271,10 +273,16 @@ function AddArtists() {
         )}
       </div>
 
-      <div className="flex justify-end">
+      <div className="flex justify-end gap-3">
+        <button
+          onClick={() => navigate("/artists")}
+          className="px-5 py-2 bg-[#83261D] text-white rounded-lg">
+          Cancel
+        </button>
+
         <button
           onClick={handleSubmit}
-          className="px-5 py-2 bg-blue-600 text-white rounded-lg">
+          className="px-5 py-2 bg-[#83261D] text-white rounded-lg">
           {editArtist ? "Update Artist" : "Add Artist"}
         </button>
       </div>

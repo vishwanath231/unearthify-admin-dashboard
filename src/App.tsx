@@ -36,6 +36,8 @@ import ArtDetailLists from "./pages/ArtForms/ArtDetails/ArtDetailsLists";
 import AddArtDetails from "./pages/ArtForms/ArtDetails/AddArtDetails";
 import EventsLists from "./pages/Events/EventsLists";
 import AddEvents from "./pages/Events/AddEvents";
+import ContibutionLists from "./pages/Contibutions/ContributionLists";
+import AddContibutions from "./pages/Contibutions/AddContributions";
 
 export default function App() {
   return (
@@ -69,6 +71,11 @@ export default function App() {
             {/* Events */}
             <Route path="/events" element={<EventsLists/>} />
             <Route path="/events/add" element={<AddEvents/>} />
+
+            {/* Contributes */}
+
+            <Route path="/contributions" element={<ContibutionLists />}/>
+            <Route path="/contribution/add" element={<AddContibutions />}/>
 
             {/* Forms */}
             {/* <Route path="/form-elements" element={<FormElements/>} /> */}

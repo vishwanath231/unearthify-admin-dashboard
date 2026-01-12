@@ -1,190 +1,306 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, ChangeEvent } from "react";
 import toast from "react-hot-toast";
-import { useNavigate } from "react-router";
+import { useNavigate, useLocation } from "react-router";
 
-export type Event = {
+export type AppEvent = {
   id: string;
   name: string;
   description: string;
   date: string;
   location: string;
-  image: string;
+  category: string;
+  imageName?: string;
+  imageUrl?: string;
 };
 
 const STORAGE_KEY = "events";
-const EDIT_KEY = "event_editing";
 
 export default function AddEvent() {
-  const empty: Event = {
-    id: "",
+  const navigate = useNavigate();
+  const location = useLocation();
+  const editEvent = location.state as AppEvent | null;
+
+  const fileRef = useRef<HTMLInputElement | null>(null);
+
+  const [form, setForm] = useState({
     name: "",
     description: "",
     date: "",
     location: "",
-    image: "",
-  };
+    category: "",
+  });
 
-  const [form, setForm] = useState<Event>(empty);
-  const [preview, setPreview] = useState<string>("");
-  const [editing, setEditing] = useState<Event | null>(null);
-  const navigate = useNavigate();
+  const [existingImage, setExistingImage] = useState<string | undefined>();
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [imageError, setImageError] = useState("");
 
-  const fileRef = useRef<HTMLInputElement | null>(null);
-
+  /* ---------- PREFILL ---------- */
   useEffect(() => {
-    const editData = localStorage.getItem(EDIT_KEY);
-    if (editData) {
-      const parsed = JSON.parse(editData);
-      setEditing(parsed);
-      setForm(parsed);
-      setPreview(parsed.image);
+    if (editEvent) {
+      setForm({
+        name: editEvent.name,
+        description: editEvent.description,
+        date: editEvent.date,
+        location: editEvent.location,
+        category: editEvent.category,
+      });
+      setExistingImage(editEvent.imageName);
+      setPreviewUrl(editEvent.imageUrl || null);
     }
-  }, []);
+  }, [editEvent]);
 
-  function handleChange(
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  }
-
-  function handleImage(e: React.ChangeEvent<HTMLInputElement>) {
+  /* ---------- IMAGE ---------- */
+  const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     if (file.size > 2 * 1024 * 1024) {
-      toast.error("Image must be less than 2MB");
-      if (fileRef.current) fileRef.current.value = "";
+      setImageError("Image must be less than 2MB");
+      setImageFile(null);
+      setPreviewUrl(null);
+      e.target.value = "";
       return;
     }
 
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setPreview(reader.result as string);
-      setForm((prev) => ({ ...prev, image: reader.result as string }));
+    setImageError("");
+    setImageFile(file);
+    setPreviewUrl(URL.createObjectURL(file));
+  };
+
+  const removeImage = () => {
+    setImageFile(null);
+    setPreviewUrl(null);
+    setExistingImage(undefined);
+    setImageError("");
+
+    if (fileRef.current) {
+      fileRef.current.value = "";
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
     };
-    reader.readAsDataURL(file);
+  }, [previewUrl]);
+
+  /* ---------- INPUT ---------- */
+  function handleChange(
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  ) {
+    setForm({ ...form, [e.target.name]: e.target.value });
   }
 
-  function handleSubmit() {
+  /* ---------- BASE64 ---------- */
+  const fileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  };
+
+  /* ---------- SUBMIT ---------- */
+  async function handleSubmit() {
     if (
+      !form.category ||
       !form.name ||
       !form.description ||
       !form.date ||
-      !form.location ||
-      !form.image
+      !form.location
     ) {
-      toast.error("All fields are required");
+      toast.error("All fields including category are required");
       return;
     }
 
-    const stored = localStorage.getItem(STORAGE_KEY);
-    const events: Event[] = stored ? JSON.parse(stored) : [];
+    const stored: AppEvent[] = JSON.parse(
+      localStorage.getItem(STORAGE_KEY) || "[]"
+    );
 
-    let updated: Event[];
+    let imageUrl = editEvent?.imageUrl;
 
-    if (editing) {
-      updated = events.map((e) =>
-        e.id === editing.id ? { ...form, id: editing.id } : e
+    if (imageFile) {
+      imageUrl = await fileToBase64(imageFile);
+    }
+
+    if (!imageUrl) {
+      toast.error("Image is required");
+      return;
+    }
+
+    let updated: AppEvent[];
+
+    if (editEvent) {
+      updated = stored.map((e) =>
+        e.id === editEvent.id
+          ? {
+              ...e,
+              ...form,
+              imageName: imageFile ? imageFile.name : editEvent.imageName,
+              imageUrl,
+            }
+          : e
       );
-      localStorage.removeItem(EDIT_KEY);
-      setEditing(null);
       toast.success("Event updated");
     } else {
-      updated = [...events, { ...form, id: Date.now().toString() }];
+      updated = [
+        ...stored,
+        {
+          id: Date.now().toString(),
+          ...form,
+          imageName: imageFile?.name,
+          imageUrl,
+        },
+      ];
       toast.success("Event added");
     }
 
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-    window.dispatchEvent(new Event("events-updated"));
+    window.dispatchEvent(new CustomEvent("events-updated"));
     navigate("/events");
-
-    setForm(empty);
-    setPreview("");
-    if (fileRef.current) fileRef.current.value = "";
   }
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow space-y-8">
-      <h2 className="text-lg font-semibold">
-        {editing ? "Update Event" : "Add Event"}
-      </h2>
+    <div className="relative bg-white p-4 rounded-lg shadow">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-xl font-semibold">
+          {editEvent ? "Update Event" : ""}
+        </h2>
+      </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* LEFT */}
-        <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
+      {/* DETAILS */}
+      <div className="bg-white rounded-xl border p-5 mb-6">
+        <h3 className="font-medium">Event Details</h3>
+        <hr className="my-3" />
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium">Event Name</label>
+            <label className="text-sm font-medium text-gray-700">
+              Select Category
+            </label>
+            <select
+              name="category"
+              value={form.category}
+              onChange={handleChange}
+              className="input bg-white">
+              <option value="">-- Select category --</option>
+              <option value="Artist Information">Artist Information</option>
+              <option value="Art Form Details">Art Form Details</option>
+              <option value="Cultural Events">Cultural Events</option>
+              <option value="Others">Others</option>
+            </select>
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-sm font-medium text-gray-700">
+              Event Name
+            </label>
             <input
               name="name"
-              className="border p-2 rounded"
-              placeholder="Eg: Classical Dance Festival"
               value={form.name}
               onChange={handleChange}
+              className="input"
+              placeholder="Eg: Classical Dance Festival"
             />
           </div>
-
           <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium">Event Date</label>
+            <label className="text-sm font-medium text-gray-700">
+              Event Date
+            </label>
             <input
               type="date"
               name="date"
-              className="border p-2 rounded"
               value={form.date}
               onChange={handleChange}
+              className="input"
             />
           </div>
 
-          <div className="flex flex-col gap-1 md:col-span-2">
-            <label className="text-sm font-medium">Event Description</label>
-            <textarea
-              name="description"
-              className="border p-2 rounded min-h-[110px]"
-              placeholder="Write event details..."
-              value={form.description}
-              onChange={handleChange}
-            />
-          </div>
-
-          <div className="flex flex-col gap-1 md:col-span-2">
-            <label className="text-sm font-medium">Event Location</label>
+          <div className="flex flex-col gap-1">
+            <label className="text-sm font-medium text-gray-700">
+              Location
+            </label>
             <input
               name="location"
-              className="border p-2 rounded"
-              placeholder="Eg: Kerala Kalamandalam, Thrissur"
               value={form.location}
               onChange={handleChange}
+              className="input"
+              placeholder="Eg: Kerala Kalamandalam, Thrissur"
             />
           </div>
 
-          <button
-            onClick={handleSubmit}
-            className="md:col-span-2 bg-black text-white py-2 rounded hover:opacity-90">
-            {editing ? "Update Event" : "Add Event"}
-          </button>
-        </div>
-
-        {/* RIGHT */}
-        <div className="flex flex-col items-center justify-center border rounded bg-gray-50 min-h-[220px] gap-3">
-          {preview ? (
-            <img
-              src={preview}
-              className="max-h-[200px] object-contain rounded"
+          <div className="flex flex-col gap-1 md:col-span-2">
+            <label className="text-sm font-medium text-gray-700">
+              Description
+            </label>
+            <textarea
+              name="description"
+              value={form.description}
+              onChange={handleChange}
+              className="input h-28"
+              placeholder="Write full event details..."
             />
-          ) : (
-            <p className="text-gray-400 text-sm">Event image preview</p>
-          )}
+          </div>
+        </div>
+      </div>
 
-          <label className="cursor-pointer text-sm bg-white border px-3 py-1 rounded">
-            Upload Image
+      {/* IMAGE */}
+      <div className="bg-white rounded-xl border p-5 mb-6">
+        <h3 className="font-medium">Event Image</h3>
+        <hr className="my-3" />
+
+        <div className="flex items-center gap-4 flex-wrap">
+          <label className="px-4 py-2 border rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 w-fit">
+            {previewUrl || existingImage ? "Change Image" : "Choose Image"}
             <input
               ref={fileRef}
               type="file"
               accept="image/*"
+              onChange={handleImageChange}
               className="hidden"
-              onChange={handleImage}
             />
           </label>
+
+          {previewUrl && (
+            <div className="relative w-24 h-24">
+              <img
+                src={previewUrl}
+                className="w-full h-full object-cover rounded-lg border"
+              />
+              <button
+                type="button"
+                onClick={removeImage}
+                className="absolute -top-2 -right-2 bg-black text-white rounded-full w-6 h-6 flex items-center justify-center text-sm">
+                ×
+              </button>
+            </div>
+          )}
+
+          {!previewUrl && existingImage && (
+            <p className="text-sm text-gray-600">
+              Current image: <b>{existingImage}</b>
+            </p>
+          )}
         </div>
+
+        {imageError && (
+          <p className="text-red-500 text-sm mt-2">{imageError}</p>
+        )}
+      </div>
+
+      <div className="flex justify-end gap-3">
+        <button
+          onClick={() => navigate("/events")}
+          className="px-5 py-2 bg-[#83261D] text-white rounded-lg">
+          Cancel
+        </button>
+
+        <button
+          onClick={handleSubmit}
+          className="px-5 py-2 bg-[#83261D] text-white rounded-lg">
+          {editEvent ? "Update Event" : "Add Event"}
+        </button>
       </div>
     </div>
   );

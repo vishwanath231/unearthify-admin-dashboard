@@ -108,7 +108,7 @@ export default function AddArtType() {
             <input
               name="name"
               placeholder="Eg: Kathakali"
-              className="border p-2 rounded"
+              className="input mt-1"
               value={form.name}
               onChange={handleChange}
             />
@@ -120,7 +120,7 @@ export default function AddArtType() {
               ref={fileRef}
               type="file"
               accept="image/*"
-              className="border p-2 rounded"
+              className="input mt-1"
               onChange={handleImage}
             />
           </div>
@@ -130,7 +130,7 @@ export default function AddArtType() {
             <input
               name="categoryId"
               placeholder="Eg: Classical Dance"
-              className="border p-2 rounded"
+              className="input mt-1"
               value={form.categoryId}
               onChange={handleChange}
             />
@@ -138,7 +138,7 @@ export default function AddArtType() {
 
           <button
             onClick={handleSubmit}
-            className="md:col-span-2 bg-black text-white py-2 rounded">
+            className="md:col-span-2 bg-[#83261D] text-white py-2 rounded">
             {editing ? "Update Art Form" : "Add Art Form"}
           </button>
         </div>

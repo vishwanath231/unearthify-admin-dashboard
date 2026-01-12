@@ -62,7 +62,10 @@ const navItems: NavItem[] = [
   {
     name: "Contribute",
     icon: <TableIcon />,
-    subItems: [{ name: "Basic Tables", path: "/basic-tables", pro: false }],
+    subItems: [
+      { name: "Contribution List", path: "/contributions", pro: false },
+      { name: "Add Contribution", path: "/contribution/add", pro: false }
+    ],
   },
   // {
   //   name: "Pages",
@@ -207,7 +210,7 @@ const AppSidebar: React.FC = () => {
                   className={`ml-auto w-5 h-5 transition-transform duration-200 ${
                     openSubmenu?.type === menuType &&
                     openSubmenu?.index === index
-                      ? "rotate-180 text-brand-500"
+                      ? "rotate-180 text-[#83261D]"
                       : ""
                   }`}
                 />

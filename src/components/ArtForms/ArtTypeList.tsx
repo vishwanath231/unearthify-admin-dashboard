@@ -54,7 +54,7 @@ export default function ArtTypeList() {
         <h2 className="text-xl font-semibold">Art Types List</h2>
         <button
           onClick={() => navigate("/arttypes/add")}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg">
+          className="bg-[#83261D] text-white px-4 py-2 rounded-lg">
           + Add ArtType
         </button>
       </div>
@@ -66,14 +66,14 @@ export default function ArtTypeList() {
           placeholder="Search by name or category..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="border px-3 py-2 rounded-lg w-full sm:w-72 focus:ring-2 focus:ring-blue-500"
+          className="border px-3 py-2 rounded-lg w-full sm:w-72 focus:ring-2 focus:ring-[#83261D] outline-none"
         />
       </div>
 
       <hr className="my-3" />
 
-      <table className="w-full text-sm">
-        <thead className="bg-gray-100">
+      <table className="w-full text-sm border border-[#F1EEE7]">
+        <thead className="bg-white">
           <tr>
             <th className="p-3 text-left">Image</th>
             <th className="p-3 text-left">Name</th>

@@ -24,6 +24,7 @@ function ArtistsList() {
   const [tempCity, setTempCity] = useState("");
   const [tempState, setTempState] = useState("");
   const [tempArtForm, setTempArtForm] = useState("");
+  const [viewArtist, setViewArtist] = useState<Artist | null>(null);
 
   const navigate = useNavigate();
 
@@ -54,9 +55,22 @@ function ArtistsList() {
     setOrder(newOrder);
 
     const sorted = [...artists].sort((a: any, b: any) => {
-      if (a[key] < b[key]) return newOrder === "asc" ? -1 : 1;
-      if (a[key] > b[key]) return newOrder === "asc" ? 1 : -1;
-      return 0;
+      const aVal = a[key];
+      const bVal = b[key];
+
+      // 👉 If both are numbers, sort numerically
+      if (typeof aVal === "number" && typeof bVal === "number") {
+        return newOrder === "asc" ? aVal - bVal : bVal - aVal;
+      }
+
+      // 👉 Otherwise sort as text (alphabetical)
+      return newOrder === "asc"
+        ? String(aVal).localeCompare(String(bVal), undefined, {
+            sensitivity: "base",
+          })
+        : String(bVal).localeCompare(String(aVal), undefined, {
+            sensitivity: "base",
+          });
     });
 
     setArtists(sorted);
@@ -148,11 +162,10 @@ function ArtistsList() {
 
   return (
     <div className="p-6 bg-white rounded-xl shadow">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-semibold">Artists List</h2>
+      <div className="flex items-center justify-end mb-4">
         <button
           onClick={() => navigate("/artists/add")}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg">
+          className="bg-[#83261D] text-white px-4 py-2 rounded-lg">
           + Add Artist
         </button>
       </div>
@@ -168,13 +181,13 @@ function ArtistsList() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search artist..."
-              className="w-full border rounded-xl pl-4 pr-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
+              className="w-full border rounded-xl pl-4 pr-3 py-2 focus:ring-2 focus:ring-[#83261D] outline-none"
             />
           </div>
 
           {/* Applied filter chips */}
           {cityFilter && (
-            <span className="flex items-center gap-2 bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-xs whitespace-nowrap">
+            <span className="flex items-center gap-2 bg-blue-50 text-[#83261D] px-3 py-1 rounded-full text-xs whitespace-nowrap">
               City: {cityFilter}
               <button
                 onClick={() => removeSingleFilter("city")}
@@ -185,7 +198,7 @@ function ArtistsList() {
           )}
 
           {stateFilter && (
-            <span className="flex items-center gap-2 bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-xs whitespace-nowrap">
+            <span className="flex items-center gap-2 bg-blue-50 text-[#83261D] px-3 py-1 rounded-full text-xs whitespace-nowrap">
               State: {stateFilter}
               <button
                 onClick={() => removeSingleFilter("state")}
@@ -196,7 +209,7 @@ function ArtistsList() {
           )}
 
           {artFormFilter && (
-            <span className="flex items-center gap-2 bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-xs whitespace-nowraps">
+            <span className="flex items-center gap-2 bg-blue-50 text-[#83261D] px-3 py-1 rounded-full text-xs whitespace-nowraps">
               Art: {artFormFilter}
               <button
                 onClick={() => removeSingleFilter("artForm")}
@@ -211,7 +224,7 @@ function ArtistsList() {
           {/* Clear filters */}
           <button
             onClick={clearFilters}
-            className="px-4 py-2 text-sm text-red-600 border border-red-200 rounded-lg hover:bg-red-50 whitespace-nowrap">
+            className="px-4 py-2 text-sm text-[#83261D] border border-red-200 rounded-lg hover:bg-[#F8E7DC] whitespace-nowrap">
             Clear Filters
           </button>
 
@@ -273,7 +286,7 @@ function ArtistsList() {
 
                 <button
                   onClick={applyFilters}
-                  className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg">
+                  className="px-4 py-2 text-sm bg-[#83261D] text-white rounded-lg">
                   Apply
                 </button>
               </div>
@@ -282,7 +295,7 @@ function ArtistsList() {
         )}
       </div>
 
-      <table className="w-full text-sm border text-gray-500">
+      <table className="w-full text-sm border border-[#F1EEE7]">
         <thead className="bg-white">
           <tr>
             {headers.map((h) => (
@@ -303,7 +316,7 @@ function ArtistsList() {
         <tbody>
           {filteredArtists.length === 0 && (
             <tr>
-              <td colSpan={6} className="p-4 text-center text-gray-500">
+              <td colSpan={6} className="p-4 text-center text-gray-600">
                 No artists added
               </td>
             </tr>
@@ -340,7 +353,16 @@ function ArtistsList() {
                 </button>
 
                 {openMenu === a.id && (
-                  <div className="absolute right-4 top-10 w-28 bg-white border rounded-lg shadow z-20">
+                  <div className="absolute right-4 top-10 w-32 bg-white border rounded-lg shadow z-20">
+                    <button
+                      onClick={() => {
+                        setViewArtist(a);
+                        setOpenMenu(null);
+                      }}
+                      className="block w-full px-4 py-2 text-left hover:bg-gray-100">
+                      View
+                    </button>
+
                     <button
                       onClick={() => navigate("/artists/add", { state: a })}
                       className="block w-full px-4 py-2 text-left hover:bg-gray-100">
@@ -352,6 +374,120 @@ function ArtistsList() {
                       className="block w-full px-4 py-2 text-left text-red-600 hover:bg-gray-100">
                       Delete
                     </button>
+                  </div>
+                )}
+
+                {viewArtist && (
+                  <div className="fixed inset-0 soft-blur flex items-center justify-center z-50 px-4">
+                    <div className="bg-white w-full max-w-lg rounded-[2rem] overflow-hidden relative shadow-2xl">
+                      <button
+                        onClick={() => setViewArtist(null)}
+                        className="absolute top-4 right-4 z-20 bg-black backdrop-blur-md text-white rounded-full w-10 h-10 flex items-center justify-center transition-all shadow-lg">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-6 w-6"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor">
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M6 18L18 6M6 6l12 12"
+                          />
+                        </svg>
+                      </button>
+
+                      <div className="relative w-full h-72">
+                        {viewArtist.imageUrl ? (
+                          <>
+                            <img
+                              src={viewArtist.imageUrl}
+                              alt={viewArtist.name}
+                              className="w-full h-full object-cover"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-white via-transparent to-transparent" />
+                          </>
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center bg-gray-100 text-gray-400">
+                            <span>No Image Available</span>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="px-8 pb-8 -mt-12 relative z-10">
+                        <div className="inline-flex items-center bg-[#83261D] text-white text-[10px] uppercase tracking-wider font-bold px-3 py-1 rounded-md mb-3 shadow-md">
+                          <span className="mr-1.5">🎨</span>{" "}
+                          {viewArtist.artForm || "Artist"}
+                        </div>
+
+                        <div className="mb-6">
+                          <h2 className="text-4xl font-black text-gray-900 leading-none">
+                            {viewArtist.name}
+                          </h2>
+                        </div>
+
+                        <div className="grid grid-cols-1 gap-6">
+                          <div className="space-y-2">
+                            <p className="flex items-center text-xs font-bold uppercase tracking-widest text-gray-400">
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="h-4 w-4 mr-1 text-[#83261D]"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                                />
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                                />
+                              </svg>
+                              Location
+                            </p>
+                            <div className="flex flex-wrap gap-2">
+                              <span className="bg-gray-100 text-gray-700 px-3 py-1.5 rounded-lg text-sm font-medium border border-gray-200">
+                                {viewArtist.city}, {viewArtist.state}
+                              </span>
+                              <span className="bg-gray-100 text-gray-700 px-3 py-1.5 rounded-lg text-sm font-medium border border-gray-200">
+                                {viewArtist.country}
+                              </span>
+                            </div>
+                          </div>
+
+                          <div className="space-y-2">
+                            <p className="flex items-center text-xs font-bold uppercase tracking-widest text-gray-400">
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="h-4 w-4 mr-1 text-[#83261D]"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                                />
+                              </svg>
+                              About the Artist
+                            </p>
+                            <p className="text-gray-600 text-sm leading-relaxed italic bg-gray-50 p-4 rounded-2xl">
+                              "
+                              {viewArtist.bio ||
+                                "This artist hasn't shared their story yet."}
+                              "
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 )}
               </td>
