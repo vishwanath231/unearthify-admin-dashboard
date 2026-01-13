@@ -1,17 +1,18 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useRef, ChangeEvent, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router";
 import toast from "react-hot-toast";
+import { createArtistApi, updateArtistApi } from "../../api/artistApi";
 
-export type Artist = {
-  id: number;
+type Artist = {
+  _id: string;
   name: string;
   artForm: string;
   city: string;
   state: string;
   country: string;
   bio: string;
-  imageName?: string;
-  imageUrl?: string;
+  image: string;
 };
 
 function AddArtists() {
@@ -70,58 +71,36 @@ function AddArtists() {
       return;
     }
 
-    const stored: Artist[] = JSON.parse(
-      localStorage.getItem("artists") || "[]"
-    );
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) return toast.error("Unauthorized");
 
-    let imageUrl = editArtist?.imageUrl;
+      const formData = new FormData();
+      formData.append("name", name);
+      formData.append("artForm", artForm);
+      formData.append("city", city);
+      formData.append("state", stateName);
+      formData.append("country", country);
+      formData.append("bio", bio);
 
-    if (imageFile) {
-      imageUrl = await fileToBase64(imageFile);
-    }
-
-    if (editArtist) {
-      const updated = stored.map((a) =>
-        a.id === editArtist.id
-          ? {
-              ...a,
-              name,
-              artForm,
-              city,
-              state: stateName,
-              country,
-              bio,
-              imageName: imageFile ? imageFile.name : editArtist.imageName,
-              imageUrl,
-            }
-          : a
-      );
-
-      localStorage.setItem("artists", JSON.stringify(updated));
-      toast.success("Artist updated");
-    } else {
-      if (!imageFile) {
-        toast.error("Image is required");
-        return;
+      if (imageFile) {
+        formData.append("image", imageFile);
       }
 
-      const newArtist: Artist = {
-        id: Date.now(),
-        name,
-        artForm,
-        city,
-        state: stateName,
-        country,
-        bio,
-        imageName: imageFile.name,
-        imageUrl,
-      };
+      if (editArtist) {
+        await updateArtistApi(editArtist._id, formData, token);
+        toast.success("Artist updated");
+      } else {
+        if (!imageFile) return toast.error("Image is required");
+        await createArtistApi(formData, token);
+        toast.success("Artist created");
+      }
 
-      localStorage.setItem("artists", JSON.stringify([...stored, newArtist]));
-      toast.success("Artist added");
+      navigate("/artists");
+    } catch (err: any) {
+      console.error("UPDATE ERROR ", err.response?.data || err.message);
+      toast.error(err.response?.data?.message || "Update failed");
     }
-
-    navigate("/artists");
   };
 
   useEffect(() => {
@@ -132,18 +111,9 @@ function AddArtists() {
       setStateName(editArtist.state || "");
       setCountry(editArtist.country || "");
       setBio(editArtist.bio || "");
-      setExistingImage(editArtist.imageName);
+      setExistingImage(editArtist.image);
     }
   }, [editArtist]);
-
-  const fileToBase64 = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
-  };
 
   return (
     <div className="relative bg-white p-4 rounded-lg shadow">

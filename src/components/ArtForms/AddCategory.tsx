@@ -331,7 +331,7 @@ export default function AddCategory() {
           <h2 className="font-semibold text-lg">Art Types</h2>
           <button
             onClick={addArtType}
-            className="bg-black text-white px-3 py-1 rounded text-sm">
+            className="bg-[#83261D] text-white px-3 py-1 rounded text-sm">
             + Assign another art type
           </button>
         </div>
@@ -409,7 +409,7 @@ export default function AddCategory() {
       <div className="flex justify-end gap-3">
         <button
           onClick={() => navigate("/categories")}
-          className="px-5 py-2 border rounded-lg">
+          className="px-5 py-2 bg-[#83261D] text-white border rounded-lg">
           Cancel
         </button>
 

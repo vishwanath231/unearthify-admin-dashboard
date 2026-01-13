@@ -4,8 +4,8 @@ import { useNavigate } from "react-router";
 
 export type ArtDetail = {
   id: string;
-  shortDescription: string;
-  category: string;
+  categoryId: string;
+  artFormId: string;
   language: string;
   state: string;
   materials: string;
@@ -17,28 +17,47 @@ export type ArtDetail = {
   website: string;
 };
 
+
 const STORAGE_KEY = "art_details";
 const EDIT_KEY = "art_detail_editing";
 
 export default function AddArtDetail() {
   const empty: ArtDetail = {
-    id: "",
-    shortDescription: "",
-    category: "",
-    language: "",
-    state: "",
-    materials: "",
-    region: "",
-    famousArtist: "",
-    performers: "",
-    typicalLength: "",
-    origin: "",
-    website: "",
-  };
+  id: "",
+  categoryId: "",
+  artFormId: "",
+  language: "",
+  state: "",
+  materials: "",
+  region: "",
+  famousArtist: "",
+  performers: "",
+  typicalLength: "",
+  origin: "",
+  website: "",
+};
 
+type Category = { id: string; name: string };
+type ArtForm = { id: string; name: string; categoryId: string };
+
+const [categories, setCategories] = useState<Category[]>([]);
+const [artForms, setArtForms] = useState<ArtForm[]>([]);
   const [form, setForm] = useState<ArtDetail>(empty);
   const [editing, setEditing] = useState<ArtDetail | null>(null);
   const navigate = useNavigate();
+
+  useEffect(() => {
+  const catData = localStorage.getItem("art_categories");
+  const artData = localStorage.getItem("art_forms");
+
+  setCategories(catData ? JSON.parse(catData) : []);
+  setArtForms(artData ? JSON.parse(artData) : []);
+}, []);
+
+const filteredArtForms = artForms.filter(
+  (a) => a.categoryId === form.categoryId
+);
+
 
   useEffect(() => {
     const editData = localStorage.getItem(EDIT_KEY);
@@ -76,11 +95,12 @@ export default function AddArtDetail() {
     }
 
     if (
-      !form.shortDescription ||
-      !form.category ||
-      !form.language ||
-      !form.state
-    ) {
+  !form.categoryId ||
+  !form.artFormId ||
+  !form.language ||
+  !form.state
+)
+ {
       toast.error("Fill all required fields");
       return;
     }
@@ -112,37 +132,59 @@ export default function AddArtDetail() {
   return (
     <div className="bg-white p-6 rounded-lg shadow space-y-8">
       {/* Basic */}
-      <div className="space-y-3">
-        <h2 className="font-semibold text-gray-700">Basic Information</h2>
+      <div className="space-y-4">
+  <h2 className="font-semibold text-gray-700">Basic Information</h2>
 
-        <div className="flex flex-col gap-1">
-          <label className="text-sm font-medium">Short Description</label>
-          <textarea
-            name="shortDescription"
-            placeholder="Eg: Kathakali is a classical dance-drama form from Kerala..."
-            className="input mt-1 min-h-[110px]"
-            value={form.shortDescription}
-            onChange={handleChange}
-          />
-        </div>
-      </div>
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+    {/* CATEGORY */}
+    <div className="flex flex-col gap-1">
+      <label className="text-sm font-medium">Category</label>
+      <select
+        value={form.categoryId}
+        onChange={(e) =>
+          setForm({ ...form, categoryId: e.target.value, artFormId: "" })
+        }
+        className="input mt-1"
+      >
+        <option value="">Select category</option>
+        {categories.map((c) => (
+          <option key={c.id} value={c.id}>
+            {c.name}
+          </option>
+        ))}
+      </select>
+    </div>
+
+    {/* ART TYPE */}
+    <div className="flex flex-col gap-1">
+      <label className="text-sm font-medium">Art Type</label>
+      <select
+        value={form.artFormId}
+        onChange={(e) =>
+          setForm({ ...form, artFormId: e.target.value })
+        }
+        className="input mt-1"
+        disabled={!form.categoryId}
+      >
+        <option value="">Select art type</option>
+        {filteredArtForms.map((a) => (
+          <option key={a.id} value={a.id}>
+            {a.name}
+          </option>
+        ))}
+      </select>
+    </div>
+
+  </div>
+</div>
+
 
       {/* Classification */}
       <div className="space-y-3">
         <h2 className="font-semibold text-gray-700">Classification</h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium">Category</label>
-            <input
-              name="category"
-              placeholder="Eg: Classical Art"
-              className="input mt-1"
-              value={form.category}
-              onChange={handleChange}
-            />
-          </div>
-
           <div className="flex flex-col gap-1">
             <label className="text-sm font-medium">Language</label>
             <input
@@ -259,11 +301,19 @@ export default function AddArtDetail() {
       </div>
 
       {/* Action */}
-      <button
-        onClick={handleSubmit}
-        className="w-full bg-[#83261D] text-white py-2 rounded">
-        {editing ? "Update Details" : "Save Details"}
-      </button>
+       <div className="flex justify-end gap-3">
+        <button
+          onClick={() => navigate("/art-details")}
+          className="px-5 py-2 bg-[#83261D] text-white border rounded-lg">
+          Cancel
+        </button>
+
+        <button
+          onClick={handleSubmit}
+          className="px-5 py-2 bg-[#83261D] text-white rounded-lg">
+          {editing ? "Update" : "Save"}
+        </button>
+      </div>
     </div>
   );
 }
