@@ -6,6 +6,7 @@ import { TiArrowSortedUp, TiArrowSortedDown } from "react-icons/ti";
 import { PiSlidersHorizontalBold } from "react-icons/pi";
 import { getAllArtistsApi, deleteArtistApi } from "../../api/artistApi";
 import toast from "react-hot-toast";
+import { HOST_URL } from "../../api/api";
 
 type Artist = {
   _id: string;
@@ -49,7 +50,7 @@ function ArtistsList() {
 
       const formatted = res.data.data.map((a: any) => ({
         ...a,
-        image: `http://localhost:5000${a.image}`,
+        image: `${HOST_URL + a.image}`,
       }));
 
       setArtists(formatted);
