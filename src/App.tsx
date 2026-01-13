@@ -36,8 +36,13 @@ import EventsLists from "./pages/Events/EventsLists";
 import AddEvents from "./pages/Events/AddEvents";
 import ContibutionLists from "./pages/Contibutions/ContributionLists";
 import AddContibutions from "./pages/Contibutions/AddContributions";
+import { useEffect } from "react";
+import { autoLogout } from "./pages/AuthPages/Auth";
 
 export default function App() {
+  useEffect(() => {
+    autoLogout();
+  }, []);
   return (
     <>
      <Toaster position="top-right" reverseOrder={false} />

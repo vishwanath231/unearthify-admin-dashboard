@@ -6,8 +6,8 @@ export default function CategoriesList() {
   return (
     <div>
       <PageMeta
-        title="React.js Form Elements Dashboard | TailAdmin - React.js Admin Dashboard Template"
-        description="This is React.js Form Elements  Dashboard page for TailAdmin - React.js Tailwind CSS Admin Dashboard Template"
+        title="Unearthify-Category List"
+        description=""
       />
       <PageBreadcrumb pageTitle="Categories List" />
           <CategoryList/>

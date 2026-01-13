@@ -109,7 +109,7 @@ function ArtistsList() {
       const token = localStorage.getItem("token");
       if (!token) return toast.error("Unauthorized");
 
-      await deleteArtistApi(id, token);
+      await deleteArtistApi(id);
       toast.success("Artist deleted");
       loadArtists();
     } catch {

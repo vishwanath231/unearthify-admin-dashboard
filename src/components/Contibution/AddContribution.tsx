@@ -1,13 +1,19 @@
-import { useState } from "react";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router";
 import toast from "react-hot-toast";
+import {
+  createContributionApi,
+  updateContributionApi,
+} from "../../api/contributionApi";
 
 export type Contribution = {
-  id: number;
+  _id: string;
   name: string;
-  mobile: string;
-  type: string;
+  mobileNumber: string;
+  contributionType: string;
   description: string;
+  status: string;
 };
 
 function AddContribution() {
@@ -20,61 +26,55 @@ function AddContribution() {
   const [type, setType] = useState("");
   const [description, setDescription] = useState("");
 
-  useState(() => {
+  useEffect(() => {
     if (editData) {
       setName(editData.name);
-      setMobile(editData.mobile);
-      setType(editData.type);
+      setMobile(editData.mobileNumber);
+      setType(editData.contributionType);
       setDescription(editData.description);
     }
-  });
+  }, [editData]);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!name || !mobile || !type || !description) {
       toast.error("All fields are required");
       return;
     }
 
     if (!/^[0-9]{10}$/.test(mobile)) {
-      toast.error("Enter valid 10 digit mobile number");
+      toast.error("Enter valid mobile number");
       return;
     }
 
-    const stored: Contribution[] = JSON.parse(
-      localStorage.getItem("contributions") || "[]"
-    );
+    const payload = {
+      name,
+      mobileNumber: mobile,
+      contributionType: type,
+      description,
+    };
 
-    if (editData) {
-      const updated = stored.map((c) =>
-        c.id === editData.id
-          ? { ...c, name, mobile, type, description }
-          : c
-      );
+    try {
+      if (editData) {
+        await updateContributionApi(editData._id, payload);
+        toast.success("Contribution updated");
+      } else {
+        await createContributionApi({
+          name,
+          mobileNumber: mobile,
+          contributionType: type,
+          description,
+        });
+        toast.success("Contribution created");
+      }
 
-      localStorage.setItem("contributions", JSON.stringify(updated));
-      toast.success("Contribution updated");
-    } else {
-      const newData: Contribution = {
-        id: Date.now(),
-        name,
-        mobile,
-        type,
-        description,
-      };
-
-      localStorage.setItem(
-        "contributions",
-        JSON.stringify([...stored, newData])
-      );
-      toast.success("Contribution added");
+      navigate("/contributions");
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Operation failed");
     }
-
-    navigate("/contributions");
   };
 
   return (
     <div className="relative bg-white p-4 rounded-lg shadow">
-
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-semibold">
@@ -88,7 +88,6 @@ function AddContribution() {
         <hr className="my-3" />
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-
           <div>
             <label className="text-sm font-medium">Name</label>
             <input
@@ -114,8 +113,7 @@ function AddContribution() {
             <select
               value={type}
               onChange={(e) => setType(e.target.value)}
-              className="input mt-1"
-            >
+              className="input mt-1">
               <option value="">Select contribution type</option>
               <option>Artist Information</option>
               <option>Art Form Details</option>
@@ -123,7 +121,6 @@ function AddContribution() {
               <option>Others</option>
             </select>
           </div>
-
         </div>
 
         <div className="mt-4">
@@ -147,8 +144,7 @@ function AddContribution() {
 
         <button
           onClick={handleSubmit}
-          className="px-5 py-2 bg-[#83261D] text-white rounded-lg"
-        >
+          className="px-5 py-2 bg-[#83261D] text-white rounded-lg">
           {editData ? "Update Contribution" : "Add Contribution"}
         </button>
       </div>
