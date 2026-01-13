@@ -4,22 +4,28 @@ import { MoreVertical } from "lucide-react";
 import { useNavigate } from "react-router";
 import { TiArrowSortedUp, TiArrowSortedDown } from "react-icons/ti";
 import { PiSlidersHorizontalBold } from "react-icons/pi";
+import toast from "react-hot-toast";
+import {
+  getAllContributionsApi,
+  deleteContributionApi,
+} from "../../api/contributionApi";
 
 export type Contribution = {
-  id: number;
+  _id: string;
   name: string;
-  mobile: string;
-  type: string;
+  mobileNumber: string;
+  contributionType: string;
   description: string;
+  status: string;
 };
 
-type SortKey = "name" | "mobile" | "type";
+type SortKey = "name" | "mobileNumber" | "contributionType";
 
 export default function ContributionList() {
   const navigate = useNavigate();
 
   const [data, setData] = useState<Contribution[]>([]);
-  const [openMenu, setOpenMenu] = useState<number | null>(null);
+  const [openMenu, setOpenMenu] = useState<string | null>(null);
 
   const [sortKey, setSortKey] = useState<SortKey>("name");
   const [order, setOrder] = useState<"asc" | "desc">("asc");
@@ -30,15 +36,24 @@ export default function ContributionList() {
 
   const [tempType, setTempType] = useState("");
   const [page, setPage] = useState(1);
-  const [viewContribution, setViewContribution] = useState<Contribution | null>(null);
+  const [viewContribution, setViewContribution] = useState<Contribution | null>(
+    null
+  );
 
   const ITEMS_PER_PAGE = 10;
 
-  /* ---------- LOAD ---------- */
   useEffect(() => {
-    const stored = JSON.parse(localStorage.getItem("contributions") || "[]");
-    setData(stored);
+    loadContributions();
   }, []);
+
+  const loadContributions = async () => {
+    try {
+      const res = await getAllContributionsApi();
+      setData(res.data.data);
+    } catch {
+      toast.error("Failed to load contributions");
+    }
+  };
 
   /* ---------- OUTSIDE CLICK (menu) ---------- */
   useEffect(() => {
@@ -92,10 +107,14 @@ export default function ContributionList() {
   };
 
   /* ---------- DELETE ---------- */
-  const handleDelete = (id: number) => {
-    const updated = data.filter((d) => d.id !== id);
-    setData(updated);
-    localStorage.setItem("contributions", JSON.stringify(updated));
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteContributionApi(id);
+      toast.success("Deleted");
+      loadContributions();
+    } catch {
+      toast.error("Delete failed");
+    }
   };
 
   /* ---------- ICON ---------- */
@@ -118,27 +137,25 @@ export default function ContributionList() {
 
   const headers: { key: SortKey; label: string }[] = [
     { key: "name", label: "Name" },
-    { key: "mobile", label: "Mobile" },
-    { key: "type", label: "Contribution Type" },
+    { key: "mobileNumber", label: "Mobile" },
+    { key: "contributionType", label: "Contribution Type" },
   ];
 
   /* ---------- FILTERED DATA ---------- */
   const filteredData = data.filter((d) => {
-  const value = search.toLowerCase();
+    const value = search.toLowerCase();
 
-  const matchesSearch =
-    d.name.toLowerCase().includes(value) ||
-    d.mobile.includes(search);
+    const matchesSearch =
+      d.name.toLowerCase().includes(value) || d.mobileNumber.includes(search);
 
-  const matchesType = typeFilter
-    ? d.type.toLowerCase().includes(typeFilter.toLowerCase())
-    : true;
+    const matchesType = typeFilter
+      ? d.contributionType.toLowerCase().includes(typeFilter.toLowerCase())
+      : true;
 
-  return matchesSearch && matchesType;
-});
+    return matchesSearch && matchesType;
+  });
 
-
-   /* ---------- PAGINATION ---------- */
+  /* ---------- PAGINATION ---------- */
   const totalPages = Math.ceil(filteredData.length / ITEMS_PER_PAGE);
   const start = (page - 1) * ITEMS_PER_PAGE;
   const paginated = filteredData.slice(start, start + ITEMS_PER_PAGE);
@@ -164,7 +181,6 @@ export default function ContributionList() {
 
   return (
     <div className="p-6 bg-white rounded-xl shadow">
-
       {/* Header */}
       <div className="flex items-center justify-end mb-4">
         <button
@@ -178,9 +194,7 @@ export default function ContributionList() {
 
       {/* Search & filter */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-5">
-
         <div className="flex flex-wrap items-center gap-2 w-full">
-
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -191,7 +205,9 @@ export default function ContributionList() {
           {typeFilter && (
             <span className="flex items-center gap-2 bg-blue-50 text-[#83261D] px-3 py-1 rounded-full text-xs">
               Type: {typeFilter}
-              <button onClick={removeTypeFilter} className="font-bold">×</button>
+              <button onClick={removeTypeFilter} className="font-bold">
+                ×
+              </button>
             </span>
           )}
         </div>
@@ -217,7 +233,6 @@ export default function ContributionList() {
       <div className="relative">
         {showFilter && (
           <div className="absolute right-0 mt-2 w-full sm:w-96 bg-white border rounded-xl shadow-lg p-4 z-30 filter-box">
-
             <h4 className="font-medium mb-3">Filter Contributions</h4>
 
             <div>
@@ -225,8 +240,7 @@ export default function ContributionList() {
               <select
                 value={tempType}
                 onChange={(e) => setTempType(e.target.value)}
-                className="w-full border rounded-lg px-3 py-2 text-sm"
-              >
+                className="w-full border rounded-lg px-3 py-2 text-sm">
                 <option value="">Select type</option>
                 <option>Artist Information</option>
                 <option>Art Form Details</option>
@@ -280,108 +294,124 @@ export default function ContributionList() {
           )}
 
           {paginated.map((c) => (
-            <tr key={c.id} className="border-t">
+            <tr key={c._id} className="border-t">
               <td className="p-3 font-medium text-gray-800">{c.name}</td>
-              <td className="p-3">{c.mobile}</td>
-              <td className="p-3">{c.type}</td>
+              <td className="p-3">{c.mobileNumber}</td>
+              <td className="p-3">{c.contributionType}</td>
 
               <td className="p-3 text-right relative contribution-menu">
                 <button
                   onClick={() =>
-                    setOpenMenu(openMenu === c.id ? null : c.id)
+                    setOpenMenu(openMenu === c._id ? null : c._id)
                   }>
                   <MoreVertical size={18} />
                 </button>
 
-                {openMenu === c.id && (
-  <div className="absolute right-4 top-10 w-32 bg-white border rounded-lg shadow z-20">
+                {openMenu === c._id && (
+                  <div className="absolute right-4 top-10 w-32 bg-white border rounded-lg shadow z-20">
+                    <button
+                      onClick={() => {
+                        setViewContribution(c);
+                        setOpenMenu(null);
+                      }}
+                      className="block w-full px-4 py-2 text-left hover:bg-gray-100">
+                      View
+                    </button>
 
-    <button
-      onClick={() => {
-        setViewContribution(c);
-        setOpenMenu(null);
-      }}
-      className="block w-full px-4 py-2 text-left hover:bg-gray-100">
-      View
-    </button>
+                    <button
+                      onClick={() =>
+                        navigate("/contribution/add", { state: c })
+                      }
+                      className="block w-full px-4 py-2 text-left hover:bg-gray-100">
+                      Update
+                    </button>
 
-    <button
-      onClick={() => navigate("/contribution/add", { state: c })}
-      className="block w-full px-4 py-2 text-left hover:bg-gray-100">
-      Update
-    </button>
+                    <button
+                      onClick={() => handleDelete(c._id)}
+                      className="block w-full px-4 py-2 text-left text-red-600 hover:bg-gray-100">
+                      Delete
+                    </button>
+                  </div>
+                )}
 
-    <button
-      onClick={() => handleDelete(c.id)}
-      className="block w-full px-4 py-2 text-left text-red-600 hover:bg-gray-100">
-      Delete
-    </button>
-  </div>
-)}
+                {viewContribution && (
+                  <div className="fixed inset-0 soft-blur flex items-center justify-center z-50 px-4">
+                    <div className="bg-white w-full max-w-md rounded-[32px] overflow-hidden relative shadow-[0_20px_50px_rgba(0,0,0,0.3)] border border-gray-100">
+                      <button
+                        onClick={() => setViewContribution(null)}
+                        className="absolute top-5 right-5 z-20 text-gray-400 hover:text-gray-900 transition-colors">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-7 w-7"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor">
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M6 18L18 6M6 6l12 12"
+                          />
+                        </svg>
+                      </button>
 
-{viewContribution && (
-  <div className="fixed inset-0 soft-blur flex items-center justify-center z-50 px-4">
-    
-    <div className="bg-white w-full max-w-md rounded-[32px] overflow-hidden relative shadow-[0_20px_50px_rgba(0,0,0,0.3)] border border-gray-100">
+                      <div className="relative bg-[#83261D] pt-12 pb-16 px-8 overflow-hidden">
+                        <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full" />
 
-      <button
-        onClick={() => setViewContribution(null)}
-        className="absolute top-5 right-5 z-20 text-gray-400 hover:text-gray-900 transition-colors"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-        </svg>
-      </button>
+                        <div className="relative z-10 flex flex-col items-center text-center">
+                          <div className="bg-white/20 p-3 rounded-2xl backdrop-blur-sm mb-4"></div>
+                          <h2 className="text-2xl font-bold text-white tracking-tight">
+                            {viewContribution.name}
+                          </h2>
+                          <span className="mt-1 text-white/70 text-xs font-bold uppercase tracking-widest bg-white/10 px-3 py-1 rounded-full">
+                            {viewContribution.contributionType}
+                          </span>
+                        </div>
+                      </div>
 
-      <div className="relative bg-[#83261D] pt-12 pb-16 px-8 overflow-hidden">
-        <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full" />
-        
-        <div className="relative z-10 flex flex-col items-center text-center">
-          <div className="bg-white/20 p-3 rounded-2xl backdrop-blur-sm mb-4">
-          </div>
-          <h2 className="text-2xl font-bold text-white tracking-tight">
-            {viewContribution.name}
-          </h2>
-          <span className="mt-1 text-white/70 text-xs font-bold uppercase tracking-widest bg-white/10 px-3 py-1 rounded-full">
-            {viewContribution.type}
-          </span>
-        </div>
-      </div>
+                      <div className="px-8 pb-8 -mt-8 relative z-10">
+                        <div className="bg-white rounded-[24px] shadow-xl border border-gray-50 p-6 space-y-6">
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-1">
+                              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                                Contact No.
+                              </p>
+                              <p className="text-gray-900 font-semibold flex items-center gap-2">
+                                <span className="text-[#83261D]">📞</span>{" "}
+                                {viewContribution.mobileNumber}
+                              </p>
+                            </div>
+                            <div className="space-y-1">
+                              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                                Status
+                              </p>
+                              <p className="text-emerald-600 font-bold flex items-center gap-2">
+                                <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />{" "}
+                                Verified
+                              </p>
+                            </div>
+                          </div>
 
-      <div className="px-8 pb-8 -mt-8 relative z-10">
-        <div className="bg-white rounded-[24px] shadow-xl border border-gray-50 p-6 space-y-6">
-          
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1">
-              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Contact No.</p>
-              <p className="text-gray-900 font-semibold flex items-center gap-2">
-                <span className="text-[#83261D]">📞</span> {viewContribution.mobile}
-              </p>
-            </div>
-            <div className="space-y-1">
-              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Status</p>
-              <p className="text-emerald-600 font-bold flex items-center gap-2">
-                <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" /> Verified
-              </p>
-            </div>
-          </div>
+                          <hr className="border-gray-100" />
 
-          <hr className="border-gray-100" />
-
-          <div className="space-y-2">
-            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Message/Notes</p>
-            <div className="bg-gray-50/80 p-4 rounded-xl">
-              <p className="text-gray-600 text-[14px] leading-relaxed italic">
-                "{viewContribution.description || "No specific notes provided for this contribution."}"
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-)}
-
+                          <div className="space-y-2">
+                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                              Message/Notes
+                            </p>
+                            <div className="bg-gray-50/80 p-4 rounded-xl">
+                              <p className="text-gray-600 text-[14px] leading-relaxed italic">
+                                "
+                                {viewContribution.description ||
+                                  "No specific notes provided for this contribution."}
+                                "
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </td>
             </tr>
           ))}

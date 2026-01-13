@@ -88,11 +88,11 @@ function AddArtists() {
       }
 
       if (editArtist) {
-        await updateArtistApi(editArtist._id, formData, token);
+        await updateArtistApi(editArtist._id, formData);
         toast.success("Artist updated");
       } else {
         if (!imageFile) return toast.error("Image is required");
-        await createArtistApi(formData, token);
+        await createArtistApi(formData);
         toast.success("Artist created");
       }
 

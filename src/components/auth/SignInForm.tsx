@@ -65,8 +65,6 @@ export default function SignInForm() {
 
       if (isChecked) {
         localStorage.setItem("token", token);
-      } else {
-        sessionStorage.setItem("token", token);
       }
 
       toast.success("Login successful");
@@ -79,7 +77,7 @@ export default function SignInForm() {
   };
   useEffect(() => {
     const token =
-      localStorage.getItem("token") || sessionStorage.getItem("token");
+      localStorage.getItem("token");
     if (token) {
       navigate("/");
     }
