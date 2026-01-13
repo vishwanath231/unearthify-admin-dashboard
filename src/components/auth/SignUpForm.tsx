@@ -7,6 +7,7 @@ import { EyeCloseIcon, EyeIcon } from "../../icons";
 import Label from "../form/Label";
 import Input from "../form/input/InputField";
 import logo from "../../assets/logo.jpg";
+import { API } from "../../api/api";
 
 export default function SignUpForm() {
   const [firstName, setFirstName] = useState("");
@@ -54,7 +55,7 @@ export default function SignUpForm() {
 
     try {
       await axios.post(
-        `${import.meta.env.VITE_API_BASE_URL}/register`,
+        API.SIGN_UP,
         payload
       );
 

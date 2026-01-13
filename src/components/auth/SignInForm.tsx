@@ -9,6 +9,7 @@ import Input from "../form/input/InputField";
 import Checkbox from "../form/input/Checkbox";
 import Button from "../ui/button/Button";
 import logo from "../../assets/logo.jpg";
+import { API } from "../../api/api";
 
 export default function SignInForm() {
   const [showPassword, setShowPassword] = useState(false);
@@ -50,7 +51,7 @@ export default function SignInForm() {
       setLoading(true);
 
       const res = await axios.post(
-        `${import.meta.env.VITE_API_BASE_URL}/login`,
+        API.SIGN_IN,
         {
           Email: value.email,
           Password: value.password,

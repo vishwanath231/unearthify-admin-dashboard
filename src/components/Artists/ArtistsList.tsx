@@ -2,15 +2,30 @@
 import { useEffect, useState } from "react";
 import { MoreVertical } from "lucide-react";
 import { useNavigate } from "react-router";
-import { Artist } from "./AddArtists";
 import { TiArrowSortedUp, TiArrowSortedDown } from "react-icons/ti";
 import { PiSlidersHorizontalBold } from "react-icons/pi";
+import { getAllArtistsApi, deleteArtistApi } from "../../api/artistApi";
+import toast from "react-hot-toast";
+
+type Artist = {
+  _id: string;
+  name: string;
+  artForm: string;
+  city: string;
+  state: string;
+  country: string;
+  bio: string;
+  image: string;
+  collection: string[];
+  isFeatured: boolean;
+  status: string;
+};
 
 type SortKey = "name" | "artForm" | "city" | "state" | "country";
 
 function ArtistsList() {
   const [artists, setArtists] = useState<Artist[]>([]);
-  const [openMenu, setOpenMenu] = useState<number | null>(null);
+  const [openMenu, setOpenMenu] = useState<string | null>(null);
 
   const [sortKey, setSortKey] = useState<SortKey>("name");
   const [order, setOrder] = useState<"asc" | "desc">("asc");
@@ -28,10 +43,23 @@ function ArtistsList() {
 
   const navigate = useNavigate();
 
-  /* ---------- LOAD ---------- */
+  const loadArtists = async () => {
+    try {
+      const res = await getAllArtistsApi();
+
+      const formatted = res.data.data.map((a: any) => ({
+        ...a,
+        image: `http://localhost:5000${a.image}`,
+      }));
+
+      setArtists(formatted);
+    } catch {
+      toast.error("Failed to load artists");
+    }
+  };
+
   useEffect(() => {
-    const data = JSON.parse(localStorage.getItem("artists") || "[]");
-    setArtists(data);
+    loadArtists();
   }, []);
 
   /* ---------- OUTSIDE CLICK ---------- */
@@ -58,12 +86,10 @@ function ArtistsList() {
       const aVal = a[key];
       const bVal = b[key];
 
-      // 👉 If both are numbers, sort numerically
       if (typeof aVal === "number" && typeof bVal === "number") {
         return newOrder === "asc" ? aVal - bVal : bVal - aVal;
       }
 
-      // 👉 Otherwise sort as text (alphabetical)
       return newOrder === "asc"
         ? String(aVal).localeCompare(String(bVal), undefined, {
             sensitivity: "base",
@@ -77,10 +103,17 @@ function ArtistsList() {
   };
 
   /* ---------- DELETE ---------- */
-  const handleDelete = (id: number) => {
-    const updated = artists.filter((a) => a.id !== id);
-    setArtists(updated);
-    localStorage.setItem("artists", JSON.stringify(updated));
+  const handleDelete = async (id: string) => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) return toast.error("Unauthorized");
+
+      await deleteArtistApi(id, token);
+      toast.success("Artist deleted");
+      loadArtists();
+    } catch {
+      toast.error("Delete failed");
+    }
   };
 
   /* ---------- ICON ---------- */
@@ -323,12 +356,12 @@ function ArtistsList() {
           )}
 
           {filteredArtists.map((a) => (
-            <tr key={a.id} className="border-t">
+            <tr key={a._id} className="border-t">
               <td className="p-3 text-gray-800">
                 <div className="flex items-center gap-3">
-                  {a.imageUrl ? (
+                  {a.image ? (
                     <img
-                      src={a.imageUrl}
+                      src={a.image}
                       alt={a.name}
                       className="w-10 h-10 rounded-full object-cover border"
                     />
@@ -348,11 +381,13 @@ function ArtistsList() {
 
               <td className="p-3 text-right relative artist-menu">
                 <button
-                  onClick={() => setOpenMenu(openMenu === a.id ? null : a.id)}>
+                  onClick={() =>
+                    setOpenMenu(openMenu === a._id ? null : a._id)
+                  }>
                   <MoreVertical size={18} />
                 </button>
 
-                {openMenu === a.id && (
+                {openMenu === a._id && (
                   <div className="absolute right-4 top-10 w-32 bg-white border rounded-lg shadow z-20">
                     <button
                       onClick={() => {
@@ -370,7 +405,7 @@ function ArtistsList() {
                     </button>
 
                     <button
-                      onClick={() => handleDelete(a.id)}
+                      onClick={() => handleDelete(a._id)}
                       className="block w-full px-4 py-2 text-left text-red-600 hover:bg-gray-100">
                       Delete
                     </button>
@@ -399,10 +434,10 @@ function ArtistsList() {
                       </button>
 
                       <div className="relative w-full h-72">
-                        {viewArtist.imageUrl ? (
+                        {viewArtist.image ? (
                           <>
                             <img
-                              src={viewArtist.imageUrl}
+                              src={viewArtist.image}
                               alt={viewArtist.name}
                               className="w-full h-full object-cover"
                             />
