@@ -2,16 +2,10 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router";
 import logo from "../assets/logo.jpg";
 
-// Assume these icons are imported from an icon library
 import {
-  // BoxCubeIcon,
   ChevronDownIcon,
   GridIcon,
   HorizontaLDots,
-  // PageIcon,
-  // PieChartIcon,
-  // PlugInIcon,
-  TableIcon,
 } from "../icons";
 import { useSidebar } from "../context/SidebarContext";
 import { FaFlag, FaUser } from "react-icons/fa";
@@ -45,8 +39,6 @@ const navItems: NavItem[] = [
     subItems: [
       { name: "Categories List", path: "/categories", pro: false },
       { name: "Add Categories", path: "/categories/add", pro: false },
-      // { name: "Art Type List", path: "/arttypes-list", pro: false },
-      // { name: "Add Art Type", path: "/arttypes/add", pro: false },
       { name: "Art Details List", path: "/art-details", pro: false },
       { name: "Add Art Details", path: "/art-details/add", pro: false },
     ],
@@ -59,54 +51,17 @@ const navItems: NavItem[] = [
       { name: "Add Event", path: "/events/add", pro: false },
     ],
   },
-  {
-    name: "Contribute",
-    icon: <TableIcon />,
-    subItems: [
-      { name: "Contribution List", path: "/contributions", pro: false },
-      { name: "Add Contribution", path: "/contribution/add", pro: false }
-    ],
-  },
   // {
-  //   name: "Pages",
-  //   icon: <PageIcon />,
+  //   name: "Contribute",
+  //   icon: <TableIcon />,
   //   subItems: [
-  //     { name: "Blank Page", path: "/blank", pro: false },
-  //     { name: "404 Error", path: "/error-404", pro: false },
+  //     { name: "Contribution List", path: "/contributions", pro: false },
+  //     { name: "Add Contribution", path: "/contribution/add", pro: false }
   //   ],
   // },
 ];
 
-const othersItems: NavItem[] = [
-  // {
-  //   icon: <PieChartIcon />,
-  //   name: "Charts",
-  //   subItems: [
-  //     { name: "Line Chart", path: "/line-chart", pro: false },
-  //     { name: "Bar Chart", path: "/bar-chart", pro: false },
-  //   ],
-  // },
-  // {
-  //   icon: <BoxCubeIcon />,
-  //   name: "UI Elements",
-  //   subItems: [
-  //     { name: "Alerts", path: "/alerts", pro: false },
-  //     { name: "Avatar", path: "/avatars", pro: false },
-  //     { name: "Badge", path: "/badge", pro: false },
-  //     { name: "Buttons", path: "/buttons", pro: false },
-  //     { name: "Images", path: "/images", pro: false },
-  //     { name: "Videos", path: "/videos", pro: false },
-  //   ],
-  // },
-  // {
-  //   icon: <PlugInIcon />,
-  //   name: "Authentication",
-  //   subItems: [
-  //     { name: "Sign In", path: "/signin", pro: false },
-  //     { name: "Sign Up", path: "/signup", pro: false },
-  //   ],
-  // },
-];
+const othersItems: NavItem[] = [];
 
 const AppSidebar: React.FC = () => {
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
@@ -366,22 +321,6 @@ const AppSidebar: React.FC = () => {
               </h2>
               {renderMenuItems(navItems, "main")}
             </div>
-            {/* <div className="">
-              <h2
-                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${
-                  !isExpanded && !isHovered
-                    ? "lg:justify-center"
-                    : "justify-start"
-                }`}
-              >
-                {isExpanded || isHovered || isMobileOpen ? (
-                  "Others"
-                ) : (
-                  <HorizontaLDots />
-                )}
-              </h2>
-              {renderMenuItems(othersItems, "others")}
-            </div> */}
           </div>
         </nav>
       </div>

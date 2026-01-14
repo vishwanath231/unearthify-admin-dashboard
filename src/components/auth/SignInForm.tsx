@@ -63,10 +63,6 @@ export default function SignInForm() {
       localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(user));
 
-      if (isChecked) {
-        localStorage.setItem("token", token);
-      }
-
       toast.success("Login successful");
       navigate("/");
     } catch (error: any) {
