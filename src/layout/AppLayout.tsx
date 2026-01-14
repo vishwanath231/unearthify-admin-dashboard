@@ -3,9 +3,22 @@ import { Outlet } from "react-router";
 import AppHeader from "./AppHeader";
 import Backdrop from "./Backdrop";
 import AppSidebar from "./AppSidebar";
+import { useEffect } from "react";
 
 const LayoutContent: React.FC = () => {
   const { isExpanded, isHovered, isMobileOpen } = useSidebar();
+
+  useEffect(() => {
+  const checkAuth = () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      window.location.href = "/signin";
+    }
+  };
+
+  window.addEventListener("storage", checkAuth);
+  return () => window.removeEventListener("storage", checkAuth);
+}, []);
 
   return (
     <div className="min-h-screen xl:flex bg-[#F9F6F1]">

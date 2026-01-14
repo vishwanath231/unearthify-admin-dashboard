@@ -1,28 +1,14 @@
-import axios from "axios";
+import api from "./axios";
 import { API } from "./api";
 
-export const getAllArtistsApi = () => axios.get(API.ARTIST);
+export const getAllArtistsApi = () =>
+  api.get(API.ARTIST);
 
-export const createArtistApi = (data: FormData, token: string) =>
-  axios.post("/artists", data, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
+export const createArtistApi = (data: FormData) =>
+  api.post("/artists", data);
 
-export const updateArtistApi = (id: string, data: FormData, token: string) =>
-  axios.put(`/artists/${id}`, data, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
+export const updateArtistApi = (id: string, data: FormData) =>
+  api.put(`/artists/${id}`, data);
 
-export const deleteArtistApi = (id: string, token: string) =>
-  axios.delete(`/artists/${id}`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-
-//   export const toggleFeaturedApi = (id: string, token: string) =>
-//   axios.patch(`/artists/${id}/toggle-featured`, {}, {
-//     headers: { Authorization: `Bearer ${token}` },
-//   });
+export const deleteArtistApi = (id: string) =>
+  api.delete(`/artists/${id}`);
