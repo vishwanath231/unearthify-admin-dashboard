@@ -24,4 +24,16 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
+api.interceptors.response.use(
+  res => res,
+  err => {
+    if (err.response?.status === 401) {
+      logout();
+      window.location.href = "/signin";
+    }
+    return Promise.reject(err);
+  }
+);
+
+
 export default api;

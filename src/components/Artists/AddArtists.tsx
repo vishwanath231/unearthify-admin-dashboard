@@ -72,9 +72,6 @@ function AddArtists() {
     }
 
     try {
-      const token = localStorage.getItem("token");
-      if (!token) return toast.error("Unauthorized");
-
       const formData = new FormData();
       formData.append("name", name);
       formData.append("artForm", artForm);
@@ -105,7 +102,7 @@ function AddArtists() {
 
   useEffect(() => {
     if (editArtist) {
-      setName(editArtist.name || "");
+      // setName(editArtist.name || "");
       setArtForm(editArtist.artForm || "");
       setCity(editArtist.city || "");
       setStateName(editArtist.state || "");
