@@ -8,7 +8,7 @@ export default function ProtectedRoute({ children }: { children: JSX.Element }) 
 
   useEffect(() => {
     const token = getToken();
-
+    
     if (!token || isTokenExpired(token)) {
       logout();
       toast.error("Session expired. Please login again.");
