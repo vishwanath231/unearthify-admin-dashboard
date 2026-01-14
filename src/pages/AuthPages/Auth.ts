@@ -51,3 +51,22 @@ export const autoLogout = () => {
     window.location.href = "/signin";
   }
 };
+let idleTimer: any;
+
+export const startIdleLogout = (minutes = 10) => {
+  const time = minutes * 60 * 1000;
+
+  const resetTimer = () => {
+    clearTimeout(idleTimer);
+    idleTimer = setTimeout(() => {
+      logout();
+      window.location.href = "/signin";
+    }, time);
+  };
+
+  ["click", "mousemove", "keydown", "scroll"].forEach((event) => {
+    window.addEventListener(event, resetTimer);
+  });
+
+  resetTimer();
+};

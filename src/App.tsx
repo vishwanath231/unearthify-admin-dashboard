@@ -2,7 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router";
 import SignIn from "./pages/AuthPages/SignIn";
 import SignUp from "./pages/AuthPages/SignUp";
 import NotFound from "./pages/OtherPage/NotFound";
-// import UserProfiles from "./pages/UserProfiles";
+import UserProfiles from "./pages/UserProfiles";
 // import Videos from "./pages/UiElements/Videos";
 // import Images from "./pages/UiElements/Images";
 // import Alerts from "./pages/UiElements/Alerts";
@@ -37,46 +37,49 @@ import AddEvents from "./pages/Events/AddEvents";
 import ContibutionLists from "./pages/Contibutions/ContributionLists";
 import AddContibutions from "./pages/Contibutions/AddContributions";
 import { useEffect } from "react";
-import { autoLogout } from "./pages/AuthPages/Auth";
+import { autoLogout, startIdleLogout } from "./pages/AuthPages/Auth";
 
 export default function App() {
   useEffect(() => {
-    autoLogout();
+    autoLogout(); // token expiry
+    startIdleLogout(10); // idle 10 min
   }, []);
+
   return (
     <>
-     <Toaster position="top-right" reverseOrder={false} />
+      <Toaster position="top-right" reverseOrder={false} />
       <Router>
         <ScrollToTop />
         <Routes>
           {/* Dashboard Layout */}
-          <Route element={
-            <ProtectedRoute>
-              <AppLayout />
-            </ProtectedRoute>
-          }>
+          <Route
+            element={
+              <ProtectedRoute>
+                <AppLayout />
+              </ProtectedRoute>
+            }>
             <Route index path="/" element={<Home />} />
 
             {/* Others Page */}
-            {/* <Route path="/profile" element={<UserProfiles/>} /> */}
-            <Route path="/artists" element={<Artists/>} />
-            <Route path="/artists/add" element={<AddArtists/>} />
+            <Route path="/profile" element={<UserProfiles />} />
+            <Route path="/artists" element={<Artists />} />
+            <Route path="/artists/add" element={<AddArtists />} />
             {/* <Route path="/blank" element={<Blank />} /> */}
 
             {/* Art Forms */}
-            <Route path="/categories" element={<CategoriesList/>} />
-            <Route path="/categories/add" element={<AddCategories/>} />
-            <Route path="/art-details" element={<ArtDetailLists/>} />
-            <Route path="/art-details/add" element={<AddArtDetails/>} />
+            <Route path="/categories" element={<CategoriesList />} />
+            <Route path="/categories/add" element={<AddCategories />} />
+            <Route path="/art-details" element={<ArtDetailLists />} />
+            <Route path="/art-details/add" element={<AddArtDetails />} />
 
             {/* Events */}
-            <Route path="/events" element={<EventsLists/>} />
-            <Route path="/events/add" element={<AddEvents/>} />
+            <Route path="/events" element={<EventsLists />} />
+            <Route path="/events/add" element={<AddEvents />} />
 
             {/* Contributes */}
 
-            <Route path="/contributions" element={<ContibutionLists />}/>
-            <Route path="/contribution/add" element={<AddContibutions />}/>
+            <Route path="/contributions" element={<ContibutionLists />} />
+            <Route path="/contribution/add" element={<AddContibutions />} />
 
             {/* Forms */}
             {/* <Route path="/form-elements" element={<FormElements/>} /> */}

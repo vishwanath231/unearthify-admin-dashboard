@@ -57,10 +57,9 @@ export default function AddEvent() {
   }, [editEvent]);
 
   useEffect(() => {
-  const stored = localStorage.getItem("art_categories");
-  setCategories(stored ? JSON.parse(stored) : []);
-}, []);
-
+    const stored = localStorage.getItem("art_categories");
+    setCategories(stored ? JSON.parse(stored) : []);
+  }, []);
 
   /* ---------- IMAGE ---------- */
   const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -99,7 +98,9 @@ export default function AddEvent() {
 
   /* ---------- INPUT ---------- */
   function handleChange(
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
   ) {
     setForm({ ...form, [e.target.name]: e.target.value });
   }
@@ -193,20 +194,18 @@ export default function AddEvent() {
               Select Category
             </label>
             <select
-  name="category"
-  value={form.category}
-  onChange={handleChange}
-  className="input bg-white"
->
-  <option value="">-- Select category --</option>
+              name="category"
+              value={form.category}
+              onChange={handleChange}
+              className="input bg-white">
+              <option value="">-- Select category --</option>
 
-  {categories.map((c) => (
-    <option key={c.id} value={c.name}>
-      {c.name}
-    </option>
-  ))}
-</select>
-
+              {categories.map((c) => (
+                <option key={c.id} value={c.name}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
           </div>
           <div className="flex flex-col gap-1">
             <label className="text-sm font-medium text-gray-700">
