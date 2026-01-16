@@ -5,8 +5,6 @@ layer(base);
 
 @custom-variant dark (&:is(.dark *));
 
-
-
 @theme {
   --font-*: initial;
   --font-outfit: Outfit, sans-serif;
@@ -816,4 +814,3 @@ span.flatpickr-weekday,
 .animate-fadeIn {
   animation: fadeIn 0.2s ease-out;
 }
-
