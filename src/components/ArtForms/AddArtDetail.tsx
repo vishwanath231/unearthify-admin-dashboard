@@ -1,8 +1,10 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router";
-import { createArtDetailApi } from "../../api/artDetailApi";
+import { createArtDetailApi, updateArtDetailApi } from "../../api/artDetailApi";
 import api from "../../api/artDetailApi";
+import { useLocation } from "react-router";
 
 type ArtForm = {
   _id: string;
@@ -35,6 +37,10 @@ export default function AddArtDetail() {
     website: "",
   });
 
+  const location = useLocation();
+const editingItem = location.state as any;
+const isEdit = Boolean(editingItem);
+
   /* ===== LOAD CATEGORIES ===== */
   useEffect(() => {
     async function loadCategories() {
@@ -61,29 +67,60 @@ export default function AddArtDetail() {
     setForm({ ...form, [e.target.name]: e.target.value });
   }
 
+
+  // Edit
+  useEffect(() => {
+  if (isEdit) {
+    setForm({
+      categoryId: editingItem.category._id,
+      artTypeId: editingItem.artType._id,
+      language: editingItem.language || "",
+      state: editingItem.state || "",
+      materials: editingItem.materials || "",
+      region: editingItem.region || "",
+      famousArtist: editingItem.famousArtist || "",
+      performers: editingItem.contemporaryPerformers || "",
+      typicalLength: editingItem.typicalLength || "",
+      origin: editingItem.origin || "",
+      website: editingItem.websiteLink || "",
+    });
+
+    const selected = categories.find(c => c._id === editingItem.category._id);
+    setArtForms(selected ? selected.artTypes : []);
+  }
+}, [isEdit, editingItem, categories]);
+
   /* ===== SUBMIT ===== */
   async function handleSubmit() {
-    try {
-      await createArtDetailApi({
-        categoryId: form.categoryId,
-        artTypeId: form.artTypeId,
-        language: form.language,
-        state: form.state,
-        materials: form.materials,
-        region: form.region,
-        famousArtist: form.famousArtist,
-        contemporaryPerformers: form.performers,
-        typicalLength: form.typicalLength,
-        origin: form.origin,
-        websiteLink: form.website,
-      });
+  try {
+    const payload = {
+      categoryId: form.categoryId,
+      artTypeId: form.artTypeId,
+      language: form.language,
+      state: form.state,
+      materials: form.materials,
+      region: form.region,
+      famousArtist: form.famousArtist,
+      contemporaryPerformers: form.performers,
+      typicalLength: form.typicalLength,
+      origin: form.origin,
+      websiteLink: form.website,
+    };
 
-      toast.success("Art detail added");
-      navigate("/art-details");
-    } catch {
-      toast.error("Create failed");
+    if (isEdit) {
+      await updateArtDetailApi(editingItem._id, payload);
+      toast.success("Updated successfully");
+    } else {
+      await createArtDetailApi(payload);
+      toast.success("Created successfully");
     }
+
+    navigate("/art-details");
+
+  } catch {
+    toast.error(isEdit ? "Update failed" : "Create failed");
   }
+}
 
   return (
     <div className="bg-white p-6 rounded-lg shadow space-y-8">
@@ -263,7 +300,7 @@ export default function AddArtDetail() {
         <button
           onClick={handleSubmit}
           className="px-5 py-2 bg-[#83261D] text-white rounded-lg">
-          {/* {editing ? "Update" : "Save"} */}Save
+          {isEdit  ? "Update" : "Save"}
         </button>
       </div>
     </div>

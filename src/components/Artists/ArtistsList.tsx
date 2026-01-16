@@ -143,13 +143,30 @@ function ArtistsList() {
     { key: "country", label: "Country" },
   ];
 
-  const filteredArtists = artists.filter(
-    (a) =>
-      a.name.toLowerCase().includes(search.toLowerCase()) &&
-      a.city.toLowerCase().includes(cityFilter.toLowerCase()) &&
-      a.state.toLowerCase().includes(stateFilter.toLowerCase()) &&
-      a.artForm.toLowerCase().includes(artFormFilter.toLowerCase())
-  );
+  const filteredArtists = artists.filter((a) => {
+    const value = search.toLowerCase();
+
+    const matchSearch =
+      a.name.toLowerCase().includes(value) ||
+      a.artForm.toLowerCase().includes(value) ||
+      a.city.toLowerCase().includes(value) ||
+      a.state.toLowerCase().includes(value) ||
+      a.country.toLowerCase().includes(value);
+
+    const matchCity = cityFilter
+      ? a.city.toLowerCase().includes(cityFilter.toLowerCase())
+      : true;
+
+    const matchState = stateFilter
+      ? a.state.toLowerCase().includes(stateFilter.toLowerCase())
+      : true;
+
+    const matchArtForm = artFormFilter
+      ? a.artForm.toLowerCase().includes(artFormFilter.toLowerCase())
+      : true;
+
+    return matchSearch && matchCity && matchState && matchArtForm;
+  });
 
   const applyFilters = () => {
     setCityFilter(tempCity);
@@ -221,7 +238,7 @@ function ArtistsList() {
 
           {/* Applied filter chips */}
           {cityFilter && (
-            <span className="flex items-center gap-2 bg-blue-50 text-[#83261D] px-3 py-1 rounded-full text-xs whitespace-nowrap">
+            <span className="flex items-center gap-2 bg-[#F8E7DC] text-[#83261D] px-3 py-1 rounded-full text-xs whitespace-nowrap">
               City: {cityFilter}
               <button
                 onClick={() => removeSingleFilter("city")}
@@ -232,7 +249,7 @@ function ArtistsList() {
           )}
 
           {stateFilter && (
-            <span className="flex items-center gap-2 bg-blue-50 text-[#83261D] px-3 py-1 rounded-full text-xs whitespace-nowrap">
+            <span className="flex items-center gap-2 bg-[#F8E7DC] text-[#83261D] px-3 py-1 rounded-full text-xs whitespace-nowrap">
               State: {stateFilter}
               <button
                 onClick={() => removeSingleFilter("state")}
@@ -243,7 +260,7 @@ function ArtistsList() {
           )}
 
           {artFormFilter && (
-            <span className="flex items-center gap-2 bg-blue-50 text-[#83261D] px-3 py-1 rounded-full text-xs whitespace-nowraps">
+            <span className="flex items-center gap-2 bg-[#F8E7DC] text-[#83261D] px-3 py-1 rounded-full text-xs whitespace-nowraps">
               Art: {artFormFilter}
               <button
                 onClick={() => removeSingleFilter("artForm")}

@@ -102,7 +102,7 @@ function AddArtists() {
 
   useEffect(() => {
     if (editArtist) {
-      // setName(editArtist.name || "");
+      setName(editArtist.name || "");
       setArtForm(editArtist.artForm || "");
       setCity(editArtist.city || "");
       setStateName(editArtist.state || "");

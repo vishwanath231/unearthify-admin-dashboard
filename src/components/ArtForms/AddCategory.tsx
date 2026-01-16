@@ -216,7 +216,6 @@ export default function AddCategory() {
   return (
     <div className="bg-white p-6 rounded-xl shadow space-y-8">
       {/* CATEGORY */}
-      <div className="border rounded-xl p-5 space-y-4">
         <h2 className="font-semibold text-lg">Category</h2>
 
         <div className="space-y-1 relative">
@@ -298,10 +297,8 @@ export default function AddCategory() {
             )}
           </div>
         )}
-      </div>
 
       {/* ART TYPES */}
-      <div className="border rounded-xl p-5 space-y-5">
         <div className="flex justify-between items-center">
           <h2 className="font-semibold text-lg">Art Types</h2>
           <button
@@ -378,7 +375,6 @@ export default function AddCategory() {
             </div>
           </div>
         ))}
-      </div>
 
       {/* ACTION */}
       <div className="flex justify-end gap-3">
