@@ -16,7 +16,12 @@ type ArtDetail = {
     _id: string;
     name: string;
   };
-  artType: string;
+  artType: {
+    _id: string;
+    name: string;
+    description?: string;
+    image?: string;
+  };
   language: string;
   state: string;
   materials: string;
@@ -144,7 +149,7 @@ export default function ArtDetailList() {
       }
 
       if (sortKey === "materials") {
-        valA = a.materials.length; // ✅ NUMBER SORT
+        valA = a.materials.length;
         valB = b.materials.length;
       }
 
@@ -152,6 +157,10 @@ export default function ArtDetailList() {
       if (valA > valB) return sortOrder === "asc" ? 1 : -1;
       return 0;
     });
+
+  function handleEdit(item: ArtDetail) {
+    navigate("/art-details/add", { state: item });
+  }
 
   async function handleDelete(id: string) {
     try {
@@ -178,32 +187,34 @@ export default function ArtDetailList() {
 
       {/* SEARCH + FILTER */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
-        <input
-          type="text"
-          placeholder="Search art details..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="border px-3 py-2 rounded-lg w-full sm:w-80 focus:ring-2 focus:ring-[#83261D] outline-none"
-        />
-        <div className="flex flex-wrap gap-2 mt-2">
-          {Object.entries(appliedFilters).map(([key, value]) =>
-            value ? (
-              <div
-                key={key}
-                className="flex items-center gap-2 bg-[#F8E7DC] text-[#83261D] px-3 py-1 rounded-full text-xs font-semibold">
-                <span className="capitalize">
-                  {key}: {value}
-                </span>
-                <button
-                  onClick={() =>
-                    setAppliedFilters((prev) => ({ ...prev, [key]: "" }))
-                  }
-                  className="font-bold hover:text-black">
-                  ×
-                </button>
-              </div>
-            ) : null
-          )}
+        <div className="flex gap-4">
+          <input
+            type="text"
+            placeholder="Search art details..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="border px-3 py-2 rounded-lg w-full sm:w-80 focus:ring-2 focus:ring-[#83261D] outline-none"
+          />
+          <div className="flex flex-wrap gap-2 mt-2">
+            {Object.entries(appliedFilters).map(([key, value]) =>
+              value ? (
+                <div
+                  key={key}
+                  className="flex items-center gap-2 bg-[#F8E7DC] text-[#83261D] px-3 py-1 rounded-full text-xs font-semibold">
+                  <span className="capitalize">
+                    {key}: {value}
+                  </span>
+                  <button
+                    onClick={() =>
+                      setAppliedFilters((prev) => ({ ...prev, [key]: "" }))
+                    }
+                    className="font-bold hover:text-black">
+                    ×
+                  </button>
+                </div>
+              ) : null
+            )}
+          </div>
         </div>
         <div className="relative flex items-center gap-2">
           <button
@@ -440,9 +451,9 @@ export default function ArtDetailList() {
                     </button>
 
                     <button
-                      // onClick={() => handleEdit(d)}
+                      onClick={() => handleEdit(d)}
                       className="block w-full px-4 py-2 text-left hover:bg-gray-100">
-                      Edit
+                      Update
                     </button>
 
                     <button
@@ -510,7 +521,7 @@ export default function ArtDetailList() {
                   },
                   {
                     label: "Art Type",
-                    value: viewItem.artType,
+                    value: viewItem.artType?.name,
                     icon: "🎵",
                   },
                   { label: "Origin", value: viewItem.origin, icon: "🌍" },
@@ -549,7 +560,7 @@ export default function ArtDetailList() {
                       <p className="text-[10px] font-black uppercase tracking-widest text-[#83261D] mb-0.5">
                         {item.label}
                       </p>
-                      <p className="text-gray-800 font-bold text-sm leading-tight">
+                      <p className="text-gray-800 font-bold text-sm leading-tight break-all">
                         {item.value || "Not Specified"}
                       </p>
                     </div>
