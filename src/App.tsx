@@ -2,7 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router";
 import SignIn from "./pages/AuthPages/SignIn";
 import SignUp from "./pages/AuthPages/SignUp";
 import NotFound from "./pages/OtherPage/NotFound";
-import UserProfiles from "./pages/UserProfiles";
+// import UserProfiles from "./pages/UserProfiles";
 // import Videos from "./pages/UiElements/Videos";
 // import Images from "./pages/UiElements/Images";
 // import Alerts from "./pages/UiElements/Alerts";
@@ -61,7 +61,7 @@ export default function App() {
             <Route index path="/" element={<Home />} />
 
             {/* Others Page */}
-            <Route path="/profile" element={<UserProfiles />} />
+            {/* <Route path="/profile" element={<UserProfiles />} /> */}
             <Route path="/artists" element={<Artists />} />
             <Route path="/artists/add" element={<AddArtists />} />
             {/* <Route path="/blank" element={<Blank />} /> */}
