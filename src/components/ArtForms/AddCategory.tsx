@@ -14,7 +14,7 @@ type Category = {
 };
 
 type ArtType = {
-  id: string;
+  _id: string;
   name: string;
   description: string;
   image: File | null;
@@ -124,7 +124,7 @@ export default function AddCategory() {
   /* ---------- ART TYPES ---------- */
   function updateArtType(id: string, key: keyof ArtType, value: any) {
     setArtTypes((prev) =>
-      prev.map((a) => (a.id === id ? { ...a, [key]: value } : a))
+      prev.map((a) => (a._id === id ? { ...a, [key]: value } : a))
     );
   }
 
@@ -148,7 +148,7 @@ export default function AddCategory() {
   }
 
   function removeArtType(id: string) {
-    setArtTypes((prev) => prev.filter((a) => a.id !== id));
+    setArtTypes((prev) => prev.filter((a) => a._id !== id));
   }
 
   /* ---------- SUBMIT ---------- */
@@ -312,11 +312,11 @@ export default function AddCategory() {
         </div>
 
         {artTypes.map((art) => (
-          <div key={art.id} className="border rounded-lg p-4 space-y-3">
+          <div key={art._id} className="border rounded-lg p-4 space-y-3">
             {artTypes.length > 1 && (
               <div className="flex justify-end">
                 <button
-                  onClick={() => removeArtType(art.id)}
+                  onClick={() => removeArtType(art._id)}
                   className="text-red-600 text-sm">
                   Remove
                 </button>
@@ -327,7 +327,7 @@ export default function AddCategory() {
               <label className="text-sm font-medium">Art Type Name</label>
               <input
                 value={art.name}
-                onChange={(e) => updateArtType(art.id, "name", e.target.value)}
+                onChange={(e) => updateArtType(art._id, "name", e.target.value)}
                 className="input"
                 placeholder="Art type name"
               />
@@ -340,7 +340,7 @@ export default function AddCategory() {
               <textarea
                 value={art.description}
                 onChange={(e) =>
-                  updateArtType(art.id, "description", e.target.value)
+                  updateArtType(art._id, "description", e.target.value)
                 }
                 className="input h-24"
                 placeholder="Art type description"
@@ -356,7 +356,7 @@ export default function AddCategory() {
                   <input
                     type="file"
                     accept="image/*"
-                    onChange={(e) => handleArtImage(art.id, e)}
+                    onChange={(e) => handleArtImage(art._id, e)}
                     className="hidden"
                   />
                 </label>
