@@ -3,16 +3,17 @@ import { useEffect, useState, useRef, ChangeEvent } from "react";
 import CreatableSelect from "react-select/creatable";
 import toast from "react-hot-toast";
 import { useNavigate, useLocation } from "react-router";
+import api from "../../api/axios";
 
 type Category = {
-  id: string;
+  _id: string;
   name: string;
   description: string;
   image: string;
 };
 
 type ArtType = {
-  id: string;
+  _id: string;
   name: string;
   description: string;
   image: string;
@@ -33,26 +34,24 @@ export default function AddCategory() {
   const editData = location.state as any;
 
   const [artTypes, setArtTypes] = useState<ArtType[]>([
-    { id: Date.now().toString(), name: "", description: "", image: "" },
+    { _id: Date.now().toString(), name: "", description: "", image: "" },
   ]);
 
   /* ---------- LOAD ---------- */
   useEffect(() => {
-    const stored = JSON.parse(localStorage.getItem("art_categories") || "[]");
-    setCategories(stored);
-
-    if (editData) {
-      setSelectedCategory({
-        value: editData.id,
-        label: editData.name,
-      });
-      setCategoryDescription(editData.description);
-      setCategoryImage(editData.image);
+    async function loadCategories() {
+      try {
+        const res = await api.get("/categories");
+        setCategories(res.data.data);
+      } catch {
+        toast.error("Failed to load categories");
+      }
     }
+    loadCategories();
   }, []);
 
   const categoryOptions = categories.map((c) => ({
-    value: c.id,
+    value: c._id,
     label: c.name,
   }));
 
@@ -84,16 +83,16 @@ export default function AddCategory() {
 
     // EXISTING CATEGORY
     else {
-  const found = categories.find((c) => c.id === option.value);
+  const found = categories.find((c) => c._id === option.value);
   if (!found) return;
 
-  setSelectedCategory({ value: found.id, label: found.name });
+  setSelectedCategory({ value: found._id, label: found.name });
   setCategoryDescription(found.description);
   setCategoryImage(found.image);
 
   // ✅ RESET art types cleanly
   setArtTypes([
-    { id: Date.now().toString(), name: "", description: "", image: "" },
+    { _id: Date.now().toString(), name: "", description: "", image: "" },
   ]);
 
   // ✅ clear old errors
@@ -129,7 +128,7 @@ export default function AddCategory() {
   /* ---------- ART TYPES ---------- */
   function updateArtType(id: string, key: keyof ArtType, value: string) {
     setArtTypes((prev) =>
-      prev.map((a) => (a.id === id ? { ...a, [key]: value } : a))
+      prev.map((a) => (a._id === id ? { ...a, [key]: value } : a))
     );
   }
 
@@ -152,12 +151,12 @@ export default function AddCategory() {
   function addArtType() {
     setArtTypes((prev) => [
       ...prev,
-      { id: Date.now().toString(), name: "", description: "", image: "" },
+      { _id: Date.now().toString(), name: "", description: "", image: "" },
     ]);
   }
 
   function removeArtType(id: string) {
-    setArtTypes((prev) => prev.filter((a) => a.id !== id));
+    setArtTypes((prev) => prev.filter((a) => a._id !== id));
   }
 
   /* ---------- SUBMIT ---------- */
@@ -200,7 +199,7 @@ export default function AddCategory() {
 
   if (selectedCategory.isNew === true) {
     const newCategory: Category = {
-      id: Date.now().toString(),
+      _id: Date.now().toString(),
       name: selectedCategory.label,
       description: categoryDescription,
       image: categoryImage,
@@ -209,7 +208,7 @@ export default function AddCategory() {
     const updated = [...categories, newCategory];
     localStorage.setItem("art_categories", JSON.stringify(updated));
 
-    categoryId = newCategory.id;
+    categoryId = newCategory._id;
   }
 
   const storedForms = JSON.parse(localStorage.getItem("art_forms") || "[]");
@@ -337,11 +336,11 @@ export default function AddCategory() {
         </div>
 
         {artTypes.map((art) => (
-          <div key={art.id} className="border rounded-lg p-4 space-y-3">
+          <div key={art._id} className="border rounded-lg p-4 space-y-3">
             {artTypes.length > 1 && (
               <div className="flex justify-end">
                 <button
-                  onClick={() => removeArtType(art.id)}
+                  onClick={() => removeArtType(art._id)}
                   className="text-red-600 text-sm">
                   Remove
                 </button>
@@ -352,7 +351,7 @@ export default function AddCategory() {
               <label className="text-sm font-medium">Art Type Name</label>
               <input
                 value={art.name}
-                onChange={(e) => updateArtType(art.id, "name", e.target.value)}
+                onChange={(e) => updateArtType(art._id, "name", e.target.value)}
                 className="input"
                 placeholder="Art type name"
               />
@@ -365,7 +364,7 @@ export default function AddCategory() {
               <textarea
                 value={art.description}
                 onChange={(e) =>
-                  updateArtType(art.id, "description", e.target.value)
+                  updateArtType(art._id, "description", e.target.value)
                 }
                 className="input h-24"
                 placeholder="Art type description"
@@ -381,7 +380,7 @@ export default function AddCategory() {
                   <input
                     type="file"
                     accept="image/*"
-                    onChange={(e) => handleArtImage(art.id, e)}
+                    onChange={(e) => handleArtImage(art._id, e)}
                     className="hidden"
                   />
                 </label>
@@ -393,7 +392,7 @@ export default function AddCategory() {
                       className="w-full h-full object-cover rounded border"
                     />
                     <button
-                      onClick={() => updateArtType(art.id, "image", "")}
+                      onClick={() => updateArtType(art._id, "image", "")}
                       className="absolute -top-2 -right-2 bg-black text-white w-6 h-6 rounded-full">
                       ×
                     </button>

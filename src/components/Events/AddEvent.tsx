@@ -1,24 +1,25 @@
+import { createEventApi, updateEventApi } from "../../api/eventApi";
 import { useEffect, useRef, useState, ChangeEvent } from "react";
 import toast from "react-hot-toast";
 import { useNavigate, useLocation } from "react-router";
+import api from "../../api/axios";
 
-export type AppEvent = {
-  id: string;
-  name: string;
+type AppEvent = {
+  _id: string;
+  title: string;
   description: string;
   date: string;
   location: string;
-  category: string;
-  imageName?: string;
-  imageUrl?: string;
+  categories: string;
+  image: string;
 };
 
 type Category = {
-  id: string;
+  _id: string;
   name: string;
 };
 
-const STORAGE_KEY = "events";
+
 
 export default function AddEvent() {
   const navigate = useNavigate();
@@ -28,12 +29,13 @@ export default function AddEvent() {
   const fileRef = useRef<HTMLInputElement | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
 
+
   const [form, setForm] = useState({
-    name: "",
+    title: "",
     description: "",
     date: "",
     location: "",
-    category: "",
+    categories: "",
   });
 
   const [existingImage, setExistingImage] = useState<string | undefined>();
@@ -45,21 +47,55 @@ export default function AddEvent() {
   useEffect(() => {
     if (editEvent) {
       setForm({
-        name: editEvent.name,
+        title: editEvent.title,
         description: editEvent.description,
         date: editEvent.date,
         location: editEvent.location,
-        category: editEvent.category,
+        categories: editEvent.categories,
       });
-      setExistingImage(editEvent.imageName);
-      setPreviewUrl(editEvent.imageUrl || null);
+      setExistingImage(editEvent.image);
+      setPreviewUrl(editEvent.image || null);
     }
   }, [editEvent]);
 
-  useEffect(() => {
-  const stored = localStorage.getItem("art_categories");
-  setCategories(stored ? JSON.parse(stored) : []);
+
+useEffect(() => {
+  const fetchCategories = async () => {
+    try {
+      const res = await api.get("/categories");
+
+      let categoryArray: any[] = [];
+
+      // CASE 1: response is already array
+      if (Array.isArray(res.data)) {
+        categoryArray = res.data;
+      }
+
+      // CASE 2: response.data is array
+      else if (Array.isArray(res.data.data)) {
+        categoryArray = res.data.data;
+      }
+
+      // CASE 3: response.categories is array
+      else if (Array.isArray(res.data.categories)) {
+        categoryArray = res.data.categories;
+      }
+
+      console.log("FINAL CATEGORY ARRAY 👉", categoryArray);
+
+      setCategories(categoryArray);
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to load categories");
+      setCategories([]); // SAFETY
+    }
+  };
+
+  fetchCategories();
 }, []);
+
+
+
 
 
   /* ---------- IMAGE ---------- */
@@ -69,9 +105,6 @@ export default function AddEvent() {
 
     if (file.size > 2 * 1024 * 1024) {
       setImageError("Image must be less than 2MB");
-      setImageFile(null);
-      setPreviewUrl(null);
-      e.target.value = "";
       return;
     }
 
@@ -104,75 +137,74 @@ export default function AddEvent() {
     setForm({ ...form, [e.target.name]: e.target.value });
   }
 
-  /* ---------- BASE64 ---------- */
-  const fileToBase64 = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
-  };
+ 
 
   /* ---------- SUBMIT ---------- */
-  async function handleSubmit() {
-    if (
-      !form.category ||
-      !form.name ||
-      !form.description ||
-      !form.date ||
-      !form.location
-    ) {
-      toast.error("All fields including category are required");
+ 
+async function handleSubmit() {
+
+    const { title, description, date, location, categories } = form;
+ 
+    if (!title || !description || !date || !location || !categories) {
+
+      toast.error("All fields are required");
+
       return;
+
     }
-
-    const stored: AppEvent[] = JSON.parse(
-      localStorage.getItem(STORAGE_KEY) || "[]"
-    );
-
-    let imageUrl = editEvent?.imageUrl;
-
-    if (imageFile) {
-      imageUrl = await fileToBase64(imageFile);
-    }
-
-    if (!imageUrl) {
+ 
+    if (!editEvent && !imageFile) {
       toast.error("Image is required");
       return;
+
+    }
+ 
+    try {
+
+      const formData = new FormData();
+
+      formData.append("title", title);
+
+      formData.append("description", description);
+
+      formData.append("date", date);
+
+      formData.append("location", location);
+
+      formData.append("categories", categories);
+ 
+      if (imageFile) {
+
+        formData.append("image", imageFile);
+
+      }
+ 
+      if (editEvent) {
+
+        await api.put(`/events/${editEvent._id}`, formData);
+
+        toast.success("Event updated");
+
+      } else {
+
+        await api.post("/events", formData);
+
+        toast.success("Event created");
+
+      }
+ 
+      navigate("/events");
+
+    } catch (err: any) {
+
+      toast.error(err.response?.data?.message || "Something went wrong");
+
     }
 
-    let updated: AppEvent[];
-
-    if (editEvent) {
-      updated = stored.map((e) =>
-        e.id === editEvent.id
-          ? {
-              ...e,
-              ...form,
-              imageName: imageFile ? imageFile.name : editEvent.imageName,
-              imageUrl,
-            }
-          : e
-      );
-      toast.success("Event updated");
-    } else {
-      updated = [
-        ...stored,
-        {
-          id: Date.now().toString(),
-          ...form,
-          imageName: imageFile?.name,
-          imageUrl,
-        },
-      ];
-      toast.success("Event added");
-    }
-
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-    window.dispatchEvent(new CustomEvent("events-updated"));
-    navigate("/events");
   }
+
+ 
+ 
 
   return (
     <div className="relative bg-white p-4 rounded-lg shadow">
@@ -193,19 +225,21 @@ export default function AddEvent() {
               Select Category
             </label>
             <select
-  name="category"
-  value={form.category}
-  onChange={handleChange}
-  className="input bg-white"
->
-  <option value="">-- Select category --</option>
+              name="categories"
+              value={form.categories}
+              onChange={handleChange}
+              className="input bg-white">
+              <option value="">-- Select category --</option>
 
-  {categories.map((c) => (
-    <option key={c.id} value={c.name}>
-      {c.name}
-    </option>
-  ))}
-</select>
+              {categories.length > 0 &&
+                categories.map((c) => (
+                  <option key={c._id} value={c.name}>
+                    {c.name}
+                  </option>
+                ))}
+            </select>
+
+               
 
           </div>
           <div className="flex flex-col gap-1">
@@ -213,8 +247,8 @@ export default function AddEvent() {
               Event Name
             </label>
             <input
-              name="name"
-              value={form.name}
+              name="title"
+              value={form.title}
               onChange={handleChange}
               className="input"
               placeholder="Eg: Classical Dance Festival"
