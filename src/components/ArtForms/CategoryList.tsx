@@ -4,31 +4,29 @@ import { useNavigate } from "react-router";
 import { MoreVertical } from "lucide-react";
 import { TiArrowSortedUp, TiArrowSortedDown } from "react-icons/ti";
 import { PiSlidersHorizontalBold } from "react-icons/pi";
+import { deleteCategoryApi, getAllCategoriesApi } from "../../api/artCategoryApi";
+import toast from "react-hot-toast";
 
-const STORAGE_KEY = "art_categories";
-const ART_FORM_KEY = "art_forms";
-
-type ArtForm = {
-  id: string;
+type ArtType = {
+  _id?: string;
   name: string;
   description: string;
   image: string;
-  categoryId: string;
 };
 
 type Category = {
-  id: string;
+  _id: string;
   name: string;
   description: string;
   image: string;
+  artTypes: ArtType[];
 };
 
 export default function CategoryList() {
   const [categories, setCategories] = useState<Category[]>([]);
-  const [artForms, setArtForms] = useState<ArtForm[]>([]);
   const [search, setSearch] = useState("");
   const [openMenu, setOpenMenu] = useState<string | null>(null);
-  const [viewArt, setViewArt] = useState<ArtForm | null>(null);
+  const [viewArt, setViewArt] = useState<ArtType | null>(null);
 
   const [sortKey, setSortKey] = useState<"name" | "count" | "">("");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
@@ -40,24 +38,13 @@ export default function CategoryList() {
   const navigate = useNavigate();
 
   /* ---------- LOAD ---------- */
-  function load() {
-    const catData = localStorage.getItem(STORAGE_KEY);
-    const artData = localStorage.getItem(ART_FORM_KEY);
-
-    setCategories(catData ? JSON.parse(catData) : []);
-    setArtForms(artData ? JSON.parse(artData) : []);
+  async function load() {
+    const res = await getAllCategoriesApi();
+    setCategories(res.data.data);
   }
 
   useEffect(() => {
     load();
-    const refresh = () => load();
-    window.addEventListener("categories-updated", refresh);
-    window.addEventListener("artforms-updated", refresh);
-
-    return () => {
-      window.removeEventListener("categories-updated", refresh);
-      window.removeEventListener("artforms-updated", refresh);
-    };
   }, []);
 
   /* ---------- OUTSIDE CLICK FILTER ---------- */
@@ -82,11 +69,6 @@ export default function CategoryList() {
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, []);
-
-  /* ---------- HELPERS ---------- */
-  function getArtTypes(categoryId: string) {
-    return artForms.filter((a) => a.categoryId === categoryId);
-  }
 
   const clearFilters = () => {
     setAppliedCategory("");
@@ -119,8 +101,8 @@ export default function CategoryList() {
       }
 
       if (sortKey === "count") {
-        valA = getArtTypes(a.id).length;
-        valB = getArtTypes(b.id).length;
+        valA = a.artTypes.length;
+        valB = b.artTypes.length;
       }
 
       if (valA < valB) return sortOrder === "asc" ? -1 : 1;
@@ -128,11 +110,16 @@ export default function CategoryList() {
       return 0;
     });
 
-  function handleDelete(id: string) {
-    const updated = categories.filter((c) => c.id !== id);
-    setCategories(updated);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+  async function handleDelete(id: string) {
+  try {
+    await deleteCategoryApi(id);
+    toast.success("Category deleted");
+    load();
+
+  } catch (err:any) {
+    toast.error(err.response?.data?.message || "Delete failed");
   }
+}
 
   return (
     <div className="p-6 bg-white rounded-xl shadow">
@@ -152,22 +139,23 @@ export default function CategoryList() {
         <input
           type="text"
           placeholder="Search by name or description..."
-          value={search} 
+          value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="border px-3 py-2 rounded-lg w-full sm:w-72 focus:ring-2 focus:ring-[#83261D] outline-none"
         />
 
         <div className="flex items-center gap-2 relative">
-            <button
-              onClick={clearFilters}
-              className="px-4 py-2 text-sm text-[#83261D] border border-red-200 rounded-lg hover:bg-[#F8E7DC] whitespace-nowrap">
-              Clear Filter
-            </button>
+          <button
+            onClick={clearFilters}
+            className="px-4 py-2 text-sm text-[#83261D] border border-red-200 rounded-lg hover:bg-[#F8E7DC] whitespace-nowrap">
+            Clear Filter
+          </button>
 
           <button
             onClick={() => setFilterOpen(!filterOpen)}
             className="flex items-center gap-2 border px-4 py-2 rounded-xl w-fit filter-btn">
-            <PiSlidersHorizontalBold />Filter
+            <PiSlidersHorizontalBold />
+            Filter
           </button>
 
           {filterOpen && (
@@ -180,7 +168,7 @@ export default function CategoryList() {
                 className="w-full border rounded-lg px-3 py-2 mb-4">
                 <option value="">All Categories</option>
                 {categories.map((c) => (
-                  <option key={c.id} value={c.name}>
+                  <option key={c._id} value={c.name}>
                     {c.name}
                   </option>
                 ))}
@@ -282,13 +270,11 @@ export default function CategoryList() {
 
           <tbody>
             {filteredCategories.map((cat) => {
-              const arts = getArtTypes(cat.id);
-
               return (
-                <tr key={cat.id} className="border-t align-top">
+                <tr key={cat._id} className="border-t align-top">
                   <td className="p-3">
                     <img
-                      src={cat.image}
+                      src={import.meta.env.VITE_API_BASE_URL + cat.image}
                       className="w-12 h-12 rounded object-cover border"
                     />
                   </td>
@@ -297,11 +283,11 @@ export default function CategoryList() {
                   <td className="p-3 text-gray-600">{cat.description}</td>
 
                   <td className="p-3 text-gray-700">
-                    {arts.length > 0 ? (
+                    {cat.artTypes.length > 0 ? (
                       <div className="flex flex-wrap gap-2">
-                        {arts.map((a) => (
+                        {cat.artTypes.map((a) => (
                           <span
-                            key={a.id}
+                            key={a._id}
                             onClick={() => setViewArt(a)}
                             className="px-2 py-1 bg-gray-100 rounded text-xs cursor-pointer hover:bg-gray-200">
                             {a.name}
@@ -318,12 +304,12 @@ export default function CategoryList() {
                   <td className="p-3 text-right relative cat-menu">
                     <button
                       onClick={() =>
-                        setOpenMenu(openMenu === cat.id ? null : cat.id)
+                        setOpenMenu(openMenu === cat._id ? null : cat._id)
                       }>
                       <MoreVertical size={18} />
                     </button>
 
-                    {openMenu === cat.id && (
+                    {openMenu === cat._id && (
                       <div className="absolute right-3 top-9 w-28 bg-white border rounded-lg shadow z-20">
                         <button
                           onClick={() =>
@@ -334,7 +320,7 @@ export default function CategoryList() {
                         </button>
 
                         <button
-                          onClick={() => handleDelete(cat.id)}
+                          onClick={() => handleDelete(cat._id)}
                           className="block w-full px-4 py-2 text-left text-red-600 hover:bg-gray-100">
                           Delete
                         </button>
@@ -379,7 +365,7 @@ export default function CategoryList() {
 
             <div className="relative h-80 w-full overflow-hidden bg-gray-100">
               <img
-                src={viewArt.image}
+                src={import.meta.env.VITE_API_BASE_URL + viewArt.image}
                 alt={viewArt.name}
                 className="w-full h-full object-cover transform hover:scale-105 transition-transform duration-1000"
               />

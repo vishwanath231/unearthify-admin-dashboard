@@ -2,7 +2,8 @@
 import { useEffect, useState, useRef, ChangeEvent } from "react";
 import CreatableSelect from "react-select/creatable";
 import toast from "react-hot-toast";
-import { useNavigate, useLocation } from "react-router";
+import { useNavigate } from "react-router";
+import { getAllCategoriesApi } from "../../api/artCategoryApi";
 import api from "../../api/axios";
 
 type Category = {
@@ -16,7 +17,7 @@ type ArtType = {
   _id: string;
   name: string;
   description: string;
-  image: string;
+  image: File | null;
 };
 
 export default function AddCategory() {
@@ -25,30 +26,34 @@ export default function AddCategory() {
   const [categoryInput, setCategoryInput] = useState("");
 
   const [categoryDescription, setCategoryDescription] = useState("");
-  const [categoryImage, setCategoryImage] = useState("");
+  const [categoryImage, setCategoryImage] = useState<File | null>(null);
   const [categoryImageError, setCategoryImageError] = useState("");
   const categoryFileRef = useRef<HTMLInputElement | null>(null);
 
   const navigate = useNavigate();
-  const location = useLocation();
-  const editData = location.state as any;
 
   const [artTypes, setArtTypes] = useState<ArtType[]>([
-    { _id: Date.now().toString(), name: "", description: "", image: "" },
+    { id: Date.now().toString(), name: "", description: "", image: null },
   ]);
 
   /* ---------- LOAD ---------- */
+
   useEffect(() => {
-    async function loadCategories() {
-      try {
-        const res = await api.get("/categories");
-        setCategories(res.data.data);
-      } catch {
-        toast.error("Failed to load categories");
-      }
+    async function load() {
+      const res = await getAllCategoriesApi();
+      setCategories(res.data.data);
     }
-    loadCategories();
+    load();
   }, []);
+
+  useEffect(() => {
+  return () => {
+    if (categoryImage) URL.revokeObjectURL(URL.createObjectURL(categoryImage));
+    artTypes.forEach(a => {
+      if (a.image) URL.revokeObjectURL(URL.createObjectURL(a.image));
+    });
+  };
+}, [categoryImage, artTypes]);
 
   const categoryOptions = categories.map((c) => ({
     value: c._id,
@@ -60,7 +65,7 @@ export default function AddCategory() {
     if (!option) {
       setSelectedCategory(null);
       setCategoryDescription("");
-      setCategoryImage("");
+      setCategoryImage(null);
       return;
     }
 
@@ -78,27 +83,22 @@ export default function AddCategory() {
 
       setSelectedCategory({ label: option.label, isNew: true });
       setCategoryDescription("");
-      setCategoryImage("");
+      setCategoryImage(null);
     }
 
     // EXISTING CATEGORY
     else {
-  const found = categories.find((c) => c._id === option.value);
-  if (!found) return;
+      const found = categories.find((c) => c._id === option.value);
+      if (!found) return;
 
-  setSelectedCategory({ value: found._id, label: found.name });
-  setCategoryDescription(found.description);
-  setCategoryImage(found.image);
+      setSelectedCategory({ value: found._id, label: found.name });
+      setCategoryDescription(found.description);
+      setArtTypes([
+        { id: Date.now().toString(), name: "", description: "", image: null },
+      ]);
 
-  // ✅ RESET art types cleanly
-  setArtTypes([
-    { _id: Date.now().toString(), name: "", description: "", image: "" },
-  ]);
-
-  // ✅ clear old errors
-  setCategoryImageError("");
-}
-
+      setCategoryImageError("");
+    }
   }
 
   /* ---------- CATEGORY IMAGE ---------- */
@@ -111,22 +111,18 @@ export default function AddCategory() {
       return;
     }
 
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setCategoryImage(reader.result as string);
-      setCategoryImageError("");
-    };
-    reader.readAsDataURL(file);
+    setCategoryImage(file);
+    setCategoryImageError("");
   }
 
   function removeCategoryImage() {
-    setCategoryImage("");
+    setCategoryImage(null);
     setCategoryImageError("");
     if (categoryFileRef.current) categoryFileRef.current.value = "";
   }
 
   /* ---------- ART TYPES ---------- */
-  function updateArtType(id: string, key: keyof ArtType, value: string) {
+  function updateArtType(id: string, key: keyof ArtType, value: any) {
     setArtTypes((prev) =>
       prev.map((a) => (a._id === id ? { ...a, [key]: value } : a))
     );
@@ -141,17 +137,13 @@ export default function AddCategory() {
       return;
     }
 
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      updateArtType(id, "image", reader.result as string);
-    };
-    reader.readAsDataURL(file);
+    updateArtType(id, "image", file);
   }
 
   function addArtType() {
     setArtTypes((prev) => [
       ...prev,
-      { _id: Date.now().toString(), name: "", description: "", image: "" },
+      { id: Date.now().toString(), name: "", description: "", image: null },
     ]);
   }
 
@@ -160,81 +152,65 @@ export default function AddCategory() {
   }
 
   /* ---------- SUBMIT ---------- */
- function handleSubmit() {
-  console.log("SUBMIT HIT", selectedCategory, artTypes);
+  async function handleSubmit() {
+    if (!selectedCategory) {
+      toast.error("Select or create category");
+      return;
+    }
 
-  if (!selectedCategory) {
-    toast.error("Select or create category");
-    return;
-  }
-
-  if (selectedCategory.isNew === true) {
     if (!categoryDescription.trim()) {
       toast.error("Category description required");
       return;
     }
-    if (!categoryImage) {
+
+    if (selectedCategory?.isNew && !categoryImage) {
       toast.error("Category image required");
       return;
     }
-  }
 
-  for (let i = 0; i < artTypes.length; i++) {
-    const art = artTypes[i];
-    if (!art.name.trim()) {
-      toast.error(`Art type ${i + 1}: name required`);
-      return;
+    for (let i = 0; i < artTypes.length; i++) {
+      if (!artTypes[i].name || !artTypes[i].description || !artTypes[i].image) {
+        toast.error("All art type fields required");
+        return;
+      }
     }
-    if (!art.description.trim()) {
-      toast.error(`Art type ${i + 1}: description required`);
-      return;
-    }
-    if (!art.image) {
-      toast.error(`Art type ${i + 1}: image required`);
-      return;
+
+    try {
+      const formData = new FormData();
+
+      formData.append("categoryName", selectedCategory.label);
+      formData.append("categoryDescription", categoryDescription);
+
+      // category image
+      if (categoryImage) {
+        formData.append("categoryImage", categoryImage);
+      }
+
+      // art types text
+      const artPayload = artTypes.map((a) => ({
+        name: a.name,
+        description: a.description,
+      }));
+
+      formData.append("artTypes", JSON.stringify(artPayload));
+
+      artTypes.forEach((a) => {
+        if (a.image) formData.append("image", a.image);
+      });
+
+      if (!selectedCategory.isNew) {
+        toast.error("Select a new category only. Existing coming next step.");
+        return;
+      }
+
+      await api.post("/categories", formData);
+
+      toast.success("Category created");
+      navigate("/categories");
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Failed");
     }
   }
-
-  let categoryId = selectedCategory.value;
-
-  if (selectedCategory.isNew === true) {
-    const newCategory: Category = {
-      _id: Date.now().toString(),
-      name: selectedCategory.label,
-      description: categoryDescription,
-      image: categoryImage,
-    };
-
-    const updated = [...categories, newCategory];
-    localStorage.setItem("art_categories", JSON.stringify(updated));
-
-    categoryId = newCategory._id;
-  }
-
-  const storedForms = JSON.parse(localStorage.getItem("art_forms") || "[]");
-
-  const newForms = artTypes.map((a) => ({
-    id: Date.now().toString() + Math.random(),
-    name: a.name,
-    description: a.description,
-    image: a.image,
-    categoryId,
-  }));
-
-  try {
-  localStorage.setItem(
-    "art_forms",
-    JSON.stringify([...storedForms, ...newForms])
-  );
-} catch (err) {
-  console.error(err);
-  toast.error("Storage limit exceeded. Please delete some old data.");
-  return;
-}
-
-  toast.success("Saved successfully");
-  navigate("/categories");
-}
 
   /* ---------- UI ---------- */
   return (
@@ -244,36 +220,36 @@ export default function AddCategory() {
         <h2 className="font-semibold text-lg">Category</h2>
 
         <div className="space-y-1 relative">
-  <div className="flex items-center gap-2">
-    <label className="text-sm font-medium">
-      Select or Create Category
-    </label>
+          <div className="flex items-center gap-2">
+            <label className="text-sm font-medium">
+              Select or Create Category
+            </label>
 
-    <div className="group relative cursor-pointer">
-      <span className="inline-flex items-center justify-center w-4 h-4 text-xs font-bold rounded-full bg-gray-200 text-gray-700">
-        i
-      </span>
+            <div className="group relative cursor-pointer">
+              <span className="inline-flex items-center justify-center w-4 h-4 text-xs font-bold rounded-full bg-gray-200 text-gray-700">
+                i
+              </span>
 
-      {/* Tooltip */}
-      <div className="absolute left-1/2 -translate-x-1/2 mt-2 w-64 scale-0 group-hover:scale-100 transition-transform origin-top bg-black text-white text-xs rounded-lg px-3 py-2 z-50 shadow-lg">
-        Choose an existing category or type a new one to create it.
-        <br />
-        If you create a new category, description and image will be required.
-      </div>
-    </div>
-  </div>
+              {/* Tooltip */}
+              <div className="absolute left-1/2 -translate-x-1/2 mt-2 w-64 scale-0 group-hover:scale-100 transition-transform origin-top bg-black text-white text-xs rounded-lg px-3 py-2 z-50 shadow-lg">
+                Choose an existing category or type a new one to create it.
+                <br />
+                If you create a new category, description and image will be
+                required.
+              </div>
+            </div>
+          </div>
 
-  <CreatableSelect
-    isClearable
-    options={categoryOptions}
-    value={selectedCategory}
-    inputValue={categoryInput}
-    onInputChange={(val) => setCategoryInput(val)}
-    onChange={handleCategorySelect}
-    placeholder="Select or type category..."
-  />
-</div>
-
+          <CreatableSelect
+            isClearable
+            options={categoryOptions}
+            value={selectedCategory}
+            inputValue={categoryInput}
+            onInputChange={(val) => setCategoryInput(val)}
+            onChange={handleCategorySelect}
+            placeholder="Select or type category..."
+          />
+        </div>
 
         <div className="space-y-1">
           <label className="text-sm font-medium">Category Description</label>
@@ -305,7 +281,7 @@ export default function AddCategory() {
               {categoryImage && (
                 <div className="relative w-24 h-24">
                   <img
-                    src={categoryImage}
+                    src={URL.createObjectURL(categoryImage)}
                     className="w-full h-full object-cover rounded border"
                   />
                   <button
@@ -388,11 +364,11 @@ export default function AddCategory() {
                 {art.image && (
                   <div className="relative w-24 h-24">
                     <img
-                      src={art.image}
+                      src={URL.createObjectURL(art.image)}
                       className="w-full h-full object-cover rounded border"
                     />
                     <button
-                      onClick={() => updateArtType(art._id, "image", "")}
+                      onClick={() => updateArtType(art.id, "image", null)}
                       className="absolute -top-2 -right-2 bg-black text-white w-6 h-6 rounded-full">
                       ×
                     </button>

@@ -1,25 +1,37 @@
-/* eslint-disable react-hooks/rules-of-hooks */
 import { Navigate } from "react-router";
-import { getToken, isTokenExpired, logout } from "./Auth.ts"
+import { getToken, isTokenExpired, logout, autoLogout, startIdleLogout } from "./Auth";
 import toast from "react-hot-toast";
-import { JSX } from "react/jsx-runtime";
-import { useEffect } from "react";
-import { autoLogout } from "./Auth.ts";
+import { JSX, useEffect, useState } from "react";
 
 export default function ProtectedRoute({ children }: { children: JSX.Element }) {
-  const token = getToken();
+  const [valid, setValid] = useState(true);
 
   useEffect(() => {
-    autoLogout();
+    const token = getToken();
+    
+    if (!token || isTokenExpired(token)) {
+      logout();
+      toast.error("Session expired. Please login again.");
+      setValid(false);
+      return;
+    }
+
+    autoLogout();        // exact expiry logout
+    startIdleLogout(60); // idle logout
+
+    const interval = setInterval(() => {
+      const token = getToken();
+      if (!token || isTokenExpired(token)) {
+        logout();
+        toast.error("Session expired. Please login again.");
+        setValid(false);
+      }
+    }, 5000); 
+
+    return () => clearInterval(interval);
   }, []);
 
-  if (!token) {
-    return <Navigate to="/signin" replace />;
-  }
-
-  if (isTokenExpired(token)) {
-    logout();
-    toast.error("Session expired. Please login again.");
+  if (!valid) {
     return <Navigate to="/signin" replace />;
   }
 

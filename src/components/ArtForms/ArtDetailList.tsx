@@ -1,32 +1,43 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import { ArtDetail } from "./AddArtDetail";
 import { useNavigate } from "react-router";
 import { MoreVertical } from "lucide-react";
 import { PiSlidersHorizontalBold } from "react-icons/pi";
 import { TiArrowSortedUp, TiArrowSortedDown } from "react-icons/ti";
+import {
+  getAllArtDetailsApi,
+  deleteArtDetailApi,
+} from "../../api/artDetailApi";
 
-const STORAGE_KEY = "art_details";
-const EDIT_KEY = "art_detail_editing";
+type ArtDetail = {
+  _id: string;
+  category: {
+    _id: string;
+    name: string;
+  };
+  artType: string;
+  language: string;
+  state: string;
+  materials: string;
+  region: string;
+  famousArtist: string;
+  contemporaryPerformers: string;
+  typicalLength: string;
+  origin: string;
+  websiteLink: string;
+};
 
 export default function ArtDetailList() {
   const [details, setDetails] = useState<ArtDetail[]>([]);
   const [search, setSearch] = useState("");
-
   const [filterOpen, setFilterOpen] = useState(false);
   const [openMenu, setOpenMenu] = useState<string | null>(null);
   const [viewItem, setViewItem] = useState<ArtDetail | null>(null);
-  const [artForms, setArtForms] = useState<ArtForm[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
   const [sortKey, setSortKey] = useState<
     "origin" | "region" | "artist" | "materials" | ""
   >("");
-
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
-
-  type Category = { id: string; name: string };
-  type ArtForm = { id: string; name: string };
 
   const [tempFilters, setTempFilters] = useState({
     region: "",
@@ -42,31 +53,18 @@ export default function ArtDetailList() {
 
   const navigate = useNavigate();
 
-  function load() {
-    const data = localStorage.getItem(STORAGE_KEY);
-    if (data) setDetails(JSON.parse(data));
-    else setDetails([]);
+  async function load() {
+    try {
+      const res = await getAllArtDetailsApi();
+      setDetails(res.data.data);
+    } catch {
+      toast.error("Failed to load data");
+    }
   }
 
   useEffect(() => {
     load();
-
-    const catData = localStorage.getItem("art_categories");
-    const artData = localStorage.getItem("art_forms");
-
-    setCategories(catData ? JSON.parse(catData) : []);
-    setArtForms(artData ? JSON.parse(artData) : []);
-
-    const refresh = () => load();
-    window.addEventListener("artdetails-updated", refresh);
-    return () => window.removeEventListener("artdetails-updated", refresh);
   }, []);
-
-  const getCategoryName = (id: string) =>
-    categories.find((c) => c.id === id)?.name || "Unknown";
-
-  const getArtTypeName = (id: string) =>
-    artForms.find((a) => a.id === id)?.name || "Unknown";
 
   /* ---------- CLOSE MENU ---------- */
   useEffect(() => {
@@ -79,18 +77,17 @@ export default function ArtDetailList() {
   }, []);
 
   /* ---------- CLOSE FILTER ON OUTSIDE CLICK ---------- */
-useEffect(() => {
-  const handler = (e: MouseEvent) => {
-    const target = e.target as HTMLElement;
-    if (!target.closest(".filter-box") && !target.closest(".filter-btn")) {
-      setFilterOpen(false);
-    }
-  };
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest(".filter-box") && !target.closest(".filter-btn")) {
+        setFilterOpen(false);
+      }
+    };
 
-  document.addEventListener("mousedown", handler);
-  return () => document.removeEventListener("mousedown", handler);
-}, []);
-
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
 
   /* ---------- CLEAR FILTER ---------- */
   const clearFilters = () => {
@@ -109,7 +106,7 @@ useEffect(() => {
         d.materials.toLowerCase().includes(value) ||
         d.famousArtist.toLowerCase().includes(value) ||
         d.region.toLowerCase().includes(value) ||
-        d.website.toLowerCase().includes(value);
+        d.websiteLink.toLowerCase().includes(value);
 
       const matchRegion = appliedFilters.region
         ? d.region === appliedFilters.region
@@ -156,17 +153,14 @@ useEffect(() => {
       return 0;
     });
 
-  function handleDelete(id: string) {
-    const updated = details.filter((d) => d.id !== id);
-    setDetails(updated);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-  }
-
-  function handleEdit(item: ArtDetail) {
-    localStorage.setItem(EDIT_KEY, JSON.stringify(item));
-    navigate("/art-details/add");
-    window.dispatchEvent(new Event("artdetail-edit"));
-    toast.success("Details loaded in form");
+  async function handleDelete(id: string) {
+    try {
+      await deleteArtDetailApi(id);
+      toast.success("Deleted");
+      load();
+    } catch {
+      toast.error("Delete failed");
+    }
   }
 
   return (
@@ -191,7 +185,26 @@ useEffect(() => {
           onChange={(e) => setSearch(e.target.value)}
           className="border px-3 py-2 rounded-lg w-full sm:w-80 focus:ring-2 focus:ring-[#83261D] outline-none"
         />
-
+        <div className="flex flex-wrap gap-2 mt-2">
+          {Object.entries(appliedFilters).map(([key, value]) =>
+            value ? (
+              <div
+                key={key}
+                className="flex items-center gap-2 bg-[#F8E7DC] text-[#83261D] px-3 py-1 rounded-full text-xs font-semibold">
+                <span className="capitalize">
+                  {key}: {value}
+                </span>
+                <button
+                  onClick={() =>
+                    setAppliedFilters((prev) => ({ ...prev, [key]: "" }))
+                  }
+                  className="font-bold hover:text-black">
+                  ×
+                </button>
+              </div>
+            ) : null
+          )}
+        </div>
         <div className="relative flex items-center gap-2">
           <button
             onClick={clearFilters}
@@ -207,7 +220,7 @@ useEffect(() => {
           </button>
 
           {filterOpen && (
-            <div className="absolute right-0 top-full mt-2 w-80 bg-white border rounded-xl shadow-xl p-4 z-30">
+            <div className="filter-box absolute right-0 top-full mt-2 w-80 bg-white border rounded-xl shadow-xl p-4 z-30">
               <p className="font-semibold mb-3">Filter</p>
 
               <select
@@ -279,148 +292,146 @@ useEffect(() => {
       <table className="w-full text-sm border border-[#F1EEE7]">
         <thead>
           <th
-      className="p-3 text-left cursor-pointer select-none"
-      onClick={() => {
-        setSortKey("origin");
-        setSortOrder(sortOrder === "asc" ? "desc" : "asc");
-      }}
-    >
-      <div className="flex items-center gap-1">
-        <span>Origin</span>
-        <div className="flex flex-col leading-none">
-          <TiArrowSortedUp
-            size={14}
-            className={
-              sortKey === "origin" && sortOrder === "asc"
-                ? "text-black"
-                : "text-gray-300"
-            }
-          />
-          <TiArrowSortedDown
-            size={14}
-            className={
-              sortKey === "origin" && sortOrder === "desc"
-                ? "text-black"
-                : "text-gray-300"
-            }
-          />
-        </div>
-      </div>
-    </th>
+            className="p-3 text-left cursor-pointer select-none"
+            onClick={() => {
+              setSortKey("origin");
+              setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+            }}>
+            <div className="flex items-center gap-1">
+              <span>Origin</span>
+              <div className="flex flex-col leading-none">
+                <TiArrowSortedUp
+                  size={14}
+                  className={
+                    sortKey === "origin" && sortOrder === "asc"
+                      ? "text-black"
+                      : "text-gray-300"
+                  }
+                />
+                <TiArrowSortedDown
+                  size={14}
+                  className={
+                    sortKey === "origin" && sortOrder === "desc"
+                      ? "text-black"
+                      : "text-gray-300"
+                  }
+                />
+              </div>
+            </div>
+          </th>
 
-    {/* MATERIALS (NUMBER) */}
-    <th
-      className="p-3 text-left cursor-pointer select-none"
-      onClick={() => {
-        setSortKey("materials");
-        setSortOrder(sortOrder === "asc" ? "desc" : "asc");
-      }}
-    >
-      <div className="flex items-center gap-1">
-        <span>Materials</span>
-        <div className="flex flex-col leading-none">
-          <TiArrowSortedUp
-            size={14}
-            className={
-              sortKey === "materials" && sortOrder === "asc"
-                ? "text-black"
-                : "text-gray-300"
-            }
-          />
-          <TiArrowSortedDown
-            size={14}
-            className={
-              sortKey === "materials" && sortOrder === "desc"
-                ? "text-black"
-                : "text-gray-300"
-            }
-          />
-        </div>
-      </div>
-    </th>
+          {/* MATERIALS (NUMBER) */}
+          <th
+            className="p-3 text-left cursor-pointer select-none"
+            onClick={() => {
+              setSortKey("materials");
+              setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+            }}>
+            <div className="flex items-center gap-1">
+              <span>Materials</span>
+              <div className="flex flex-col leading-none">
+                <TiArrowSortedUp
+                  size={14}
+                  className={
+                    sortKey === "materials" && sortOrder === "asc"
+                      ? "text-black"
+                      : "text-gray-300"
+                  }
+                />
+                <TiArrowSortedDown
+                  size={14}
+                  className={
+                    sortKey === "materials" && sortOrder === "desc"
+                      ? "text-black"
+                      : "text-gray-300"
+                  }
+                />
+              </div>
+            </div>
+          </th>
 
-    {/* FAMOUS ARTIST (A–Z) */}
-    <th
-      className="p-3 text-left cursor-pointer select-none"
-      onClick={() => {
-        setSortKey("artist");
-        setSortOrder(sortOrder === "asc" ? "desc" : "asc");
-      }}
-    >
-      <div className="flex items-center gap-1">
-        <span>Famous Artist</span>
-        <div className="flex flex-col leading-none">
-          <TiArrowSortedUp
-            size={14}
-            className={
-              sortKey === "artist" && sortOrder === "asc"
-                ? "text-black"
-                : "text-gray-300"
-            }
-          />
-          <TiArrowSortedDown
-            size={14}
-            className={
-              sortKey === "artist" && sortOrder === "desc"
-                ? "text-black"
-                : "text-gray-300"
-            }
-          />
-        </div>
-      </div>
-    </th>
+          {/* FAMOUS ARTIST (A–Z) */}
+          <th
+            className="p-3 text-left cursor-pointer select-none"
+            onClick={() => {
+              setSortKey("artist");
+              setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+            }}>
+            <div className="flex items-center gap-1">
+              <span>Famous Artist</span>
+              <div className="flex flex-col leading-none">
+                <TiArrowSortedUp
+                  size={14}
+                  className={
+                    sortKey === "artist" && sortOrder === "asc"
+                      ? "text-black"
+                      : "text-gray-300"
+                  }
+                />
+                <TiArrowSortedDown
+                  size={14}
+                  className={
+                    sortKey === "artist" && sortOrder === "desc"
+                      ? "text-black"
+                      : "text-gray-300"
+                  }
+                />
+              </div>
+            </div>
+          </th>
 
-    {/* REGION (A–Z) */}
-    <th
-      className="p-3 text-left cursor-pointer select-none"
-      onClick={() => {
-        setSortKey("region");
-        setSortOrder(sortOrder === "asc" ? "desc" : "asc");
-      }}
-    >
-      <div className="flex items-center gap-1">
-        <span>Region</span>
-        <div className="flex flex-col leading-none">
-          <TiArrowSortedUp
-            size={14}
-            className={
-              sortKey === "region" && sortOrder === "asc"
-                ? "text-black"
-                : "text-gray-300"
-            }
-          />
-          <TiArrowSortedDown
-            size={14}
-            className={
-              sortKey === "region" && sortOrder === "desc"
-                ? "text-black"
-                : "text-gray-300"
-            }
-          />
-        </div>
-      </div>
-    </th>
+          {/* REGION (A–Z) */}
+          <th
+            className="p-3 text-left cursor-pointer select-none"
+            onClick={() => {
+              setSortKey("region");
+              setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+            }}>
+            <div className="flex items-center gap-1">
+              <span>Region</span>
+              <div className="flex flex-col leading-none">
+                <TiArrowSortedUp
+                  size={14}
+                  className={
+                    sortKey === "region" && sortOrder === "asc"
+                      ? "text-black"
+                      : "text-gray-300"
+                  }
+                />
+                <TiArrowSortedDown
+                  size={14}
+                  className={
+                    sortKey === "region" && sortOrder === "desc"
+                      ? "text-black"
+                      : "text-gray-300"
+                  }
+                />
+              </div>
+            </div>
+          </th>
 
-    <th className="p-3 text-left">Website</th>
-    <th className="p-3 text-right"></th>
+          <th className="p-3 text-left">Website</th>
+          <th className="p-3 text-right"></th>
         </thead>
 
         <tbody>
           {filteredDetails.map((d) => (
-            <tr key={d.id} className="border-t">
+            <tr key={d._id} className="border-t">
               <td className="p-3">{d.origin}</td>
               <td className="p-3">{d.materials}</td>
               <td className="p-3">{d.famousArtist}</td>
               <td className="p-3">{d.region}</td>
-              <td className="p-3">{d.website}</td>
+              <td className="p-3">{d.websiteLink}</td>
 
               <td className="p-3 text-right relative action-menu">
                 <button
-                  onClick={() => setOpenMenu(openMenu === d.id ? null : d.id)}>
+                  onClick={() =>
+                    setOpenMenu(openMenu === d._id ? null : d._id)
+                  }>
                   <MoreVertical size={18} />
                 </button>
 
-                {openMenu === d.id && (
+                {openMenu === d._id && (
                   <div className="absolute right-2 top-9 w-32 bg-white border rounded-lg shadow z-20">
                     <button
                       onClick={() => setViewItem(d)}
@@ -429,13 +440,13 @@ useEffect(() => {
                     </button>
 
                     <button
-                      onClick={() => handleEdit(d)}
+                      // onClick={() => handleEdit(d)}
                       className="block w-full px-4 py-2 text-left hover:bg-gray-100">
                       Edit
                     </button>
 
                     <button
-                      onClick={() => handleDelete(d.id)}
+                      onClick={() => handleDelete(d._id)}
                       className="block w-full px-4 py-2 text-left text-red-600 hover:bg-gray-100">
                       Delete
                     </button>
@@ -445,12 +456,14 @@ useEffect(() => {
             </tr>
           ))}
           {filteredDetails.length === 0 && (
-    <tr>
-      <td colSpan={6} className="p-6 text-center text-gray-400 font-medium">
-        No Details Added
-      </td>
-    </tr>
-  )}  
+            <tr>
+              <td
+                colSpan={6}
+                className="p-6 text-center text-gray-400 font-medium">
+                No Details Added
+              </td>
+            </tr>
+          )}
         </tbody>
       </table>
 
@@ -492,12 +505,12 @@ useEffect(() => {
                 {[
                   {
                     label: "Category",
-                    value: getCategoryName(viewItem.categoryId),
+                    value: viewItem.category?.name,
                     icon: "📂",
                   },
                   {
                     label: "Art Type",
-                    value: getArtTypeName(viewItem.artFormId),
+                    value: viewItem.artType,
                     icon: "🎵",
                   },
                   { label: "Origin", value: viewItem.origin, icon: "🌍" },
@@ -512,13 +525,18 @@ useEffect(() => {
                   },
                   {
                     label: "Performers",
-                    value: viewItem.performers,
+                    value: viewItem.contemporaryPerformers,
                     icon: "🎭",
                   },
                   {
                     label: "Typical Length",
                     value: viewItem.typicalLength,
                     icon: "⏱️",
+                  },
+                  {
+                    label: "Website",
+                    value: viewItem.websiteLink,
+                    icon: "🔗",
                   },
                 ].map((item, idx) => (
                   <div
