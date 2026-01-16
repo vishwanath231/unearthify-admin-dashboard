@@ -81,7 +81,7 @@ useEffect(() => {
         categoryArray = res.data.categories;
       }
 
-      console.log("FINAL CATEGORY ARRAY 👉", categoryArray);
+
 
       setCategories(categoryArray);
     } catch (error) {

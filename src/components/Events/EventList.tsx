@@ -47,10 +47,7 @@ export default function EventList() {
   const [categoryFilter, setCategoryFilter] = useState("");
   const [tempCategory, setTempCategory] = useState("");
 
-  // pagination
-  const [page, setPage] = useState(1);
-  const ITEMS_PER_PAGE = 10;
-
+  
   /* ---------- LOAD ---------- */
  
 const loadEvents = async () => {
@@ -149,8 +146,9 @@ const handleDelete = async (id: string) => {
     toast.error("Delete failed");
   }
 };
-
-
+ 
+ console.log("Events are : ",events);
+ console.log("Events are : ",events.length);
   /* ---------- FILTER + SEARCH ---------- */
   const filtered = events.filter((e) => {
   const v = search.toLowerCase();
@@ -161,15 +159,16 @@ const handleDelete = async (id: string) => {
     e.location.toLowerCase().includes(v) ||
     e.date.toLowerCase().includes(v);
 
-  const matchesDate = dateFilter ? e.date === dateFilter : true;
+  // const matchesDate = dateFilter ? e.date === dateFilter : true;
+    const matchesDate = dateFilter
+    ? new Date(e.date).toISOString().slice(0, 10) === dateFilter
+    : true;
+
 
   const matchesLocation = locationFilter
     ? e.location.toLowerCase().includes(locationFilter.toLowerCase())
     : true;
 
-  // const matchesCategory = categoryFilter
-  //   ? e.categories === categoryFilter
-  //   : true;
   const matchesCategory = categoryFilter
   ? e.categories?.trim().toLowerCase() === categoryFilter.trim().toLowerCase()
   : true;
@@ -179,14 +178,7 @@ const handleDelete = async (id: string) => {
 });
 
 
-  /* ---------- PAGINATION ---------- */
-  const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
-  const start = (page - 1) * ITEMS_PER_PAGE;
-  const paginated = filtered.slice(start, start + ITEMS_PER_PAGE);
-
-  useEffect(() => {
-    setPage(1);
-  }, [search, dateFilter, locationFilter]);
+  
 
   /* ---------- FILTER ACTIONS ---------- */
   const applyFilters = () => {
@@ -223,6 +215,15 @@ const handleDelete = async (id: string) => {
       />
     </div>
   );
+  // Formating the date
+  const formatDate = (dateStr: string) => {
+  if (!dateStr) return "";
+  return new Date(dateStr).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+};
 
   const headers: { key: SortKey; label: string }[] = [
     { key: "categories", label: "Category" },
@@ -255,18 +256,26 @@ const handleDelete = async (id: string) => {
           />
 
           {dateFilter && (
-            <span className="bg-blue-100 text-[#83261D] px-3 py-1 rounded-full text-xs flex items-center gap-1">
+            <span className="bg-[#F8E7DC] text-[#83261D] px-3 py-1 rounded-full text-xs flex items-center gap-1">
               Date: {dateFilter}
               <button onClick={() => setDateFilter("")}>×</button>
             </span>
           )}
 
           {locationFilter && (
-            <span className="bg-green-100 text-[#83261D] px-3 py-1 rounded-full text-xs flex items-center gap-1">
+            <span className="bg-[#F8E7DC] text-[#83261D] px-3 py-1 rounded-full text-xs flex items-center gap-1">
               Location: {locationFilter}
               <button onClick={() => setLocationFilter("")}>×</button>
             </span>
           )}
+
+          {categoryFilter && (
+            <span className="bg-[#F8E7DC] text-[#83261D] px-3 py-1 rounded-full text-xs flex items-center gap-1">
+              Category: {categoryFilter}
+              <button onClick={() => setCategoryFilter("")}>×</button>
+            </span>
+          )}
+
         </div>
 
         <div className="flex gap-3">
@@ -375,7 +384,9 @@ const handleDelete = async (id: string) => {
           </thead>
 
           <tbody>
-            {paginated.map((ev) => (
+            
+
+            {filtered.map((ev) => (
               <tr key={ev._id} className="border-t">
                 <td className="p-3">
                   <img
@@ -396,7 +407,8 @@ const handleDelete = async (id: string) => {
                   </p>
                 </td>
 
-                <td className="p-3">{ev.date}</td>
+                <td className="p-3">{formatDate(ev.date)}</td>
+
                 <td className="p-3">{ev.location}</td>
 
                 <td className="p-3 text-right relative event-menu">
@@ -565,46 +577,12 @@ const handleDelete = async (id: string) => {
               </tr>
             ))}
 
-            {paginated.length === 0 && (
-              <tr>
-                <td colSpan={5} className="p-4 text-center text-gray-400">
-                  No events found
-                </td>
-              </tr>
-            )}
+            
           </tbody>
         </table>
       </div>
 
-      {/* PAGINATION */}
-      {totalPages > 1 && (
-        <div className="flex justify-center mt-4 gap-2">
-          <button
-            disabled={page === 1}
-            onClick={() => setPage((p) => p - 1)}
-            className="px-3 py-1 border rounded disabled:opacity-40">
-            Prev
-          </button>
 
-          {Array.from({ length: totalPages }).map((_, i) => (
-            <button
-              key={i}
-              onClick={() => setPage(i + 1)}
-              className={`px-3 py-1 border rounded ${
-                page === i + 1 ? "bg-black text-white" : ""
-              }`}>
-              {i + 1}
-            </button>
-          ))}
-
-          <button
-            disabled={page === totalPages}
-            onClick={() => setPage((p) => p + 1)}
-            className="px-3 py-1 border rounded disabled:opacity-40">
-            Next
-          </button>
-        </div>
-      )}
     </div>
   );
 }
