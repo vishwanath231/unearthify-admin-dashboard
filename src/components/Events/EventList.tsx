@@ -216,14 +216,25 @@ const handleDelete = async (id: string) => {
     </div>
   );
   // Formating the date
+//   const formatDate = (dateStr: string) => {
+//   if (!dateStr) return "";
+//   return new Date(dateStr).toLocaleDateString("en-US", {
+//     year: "numeric",
+//     month: "long",
+//     day: "numeric",
+//   });
+// };
   const formatDate = (dateStr: string) => {
   if (!dateStr) return "";
-  return new Date(dateStr).toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
+
+  const d = new Date(dateStr);
+  const day = String(d.getDate()).padStart(2, "0");
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const year = d.getFullYear();
+
+  return `${day}-${month}-${year}`;
 };
+
 
   const headers: { key: SortKey; label: string }[] = [
     { key: "categories", label: "Category" },
