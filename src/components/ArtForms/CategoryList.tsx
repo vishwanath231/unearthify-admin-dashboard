@@ -7,6 +7,7 @@ import { PiSlidersHorizontalBold } from "react-icons/pi";
 import {
   deleteCategoryApi,
   getAllCategoriesApi,
+  deleteArtTypeApi,
 } from "../../api/artCategoryApi";
 import toast from "react-hot-toast";
 
@@ -25,11 +26,13 @@ type Category = {
   artTypes: ArtType[];
 };
 
+type ViewArt = ArtType & { category: Category };
+
 export default function CategoryList() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [search, setSearch] = useState("");
   const [openMenu, setOpenMenu] = useState<string | null>(null);
-  const [viewArt, setViewArt] = useState<ArtType | null>(null);
+  const [viewArt, setViewArt] = useState<ViewArt | null>(null);
 
   const [sortKey, setSortKey] = useState<"name" | "count" | "">("");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
@@ -122,6 +125,17 @@ export default function CategoryList() {
       toast.error(err.response?.data?.message || "Delete failed");
     }
   }
+
+  async function handleDeleteType() {
+    try {
+      await deleteArtTypeApi(viewArt!.category._id, viewArt!._id as string);
+      toast.success("Art type deleted");
+      setViewArt(null);
+      load();
+    } catch {
+      toast.error("Delete failed");
+    }
+  };
 
   return (
     <div className="p-6 bg-white rounded-xl shadow">
@@ -306,7 +320,7 @@ export default function CategoryList() {
                       {cat.artTypes.map((a) => (
                         <span
                           key={a._id}
-                          onClick={() => setViewArt(a)}
+                          onClick={() => setViewArt({ ...a, category: cat })}
                           className="px-2 py-1 bg-gray-100 rounded text-xs cursor-pointer hover:bg-gray-200">
                           {a.name}
                         </span>
@@ -406,6 +420,22 @@ export default function CategoryList() {
                   {viewArt.description}
                 </p>
               </div>
+            </div>
+            <div className="flex justify-end gap-3 m-4">
+              <button
+                onClick={() =>
+                  navigate("/categories/add", {
+                    state: { mode: "editArtType", data: viewArt },
+                  })
+                }
+                className="px-4 py-2 bg-[#83261D] text-white rounded-lg">
+                Update
+              </button>
+              <button
+                onClick={() => handleDeleteType()}
+                className="px-4 py-2 border rounded-lg text-red-600">
+                Delete
+              </button>
             </div>
           </div>
         </div>
