@@ -1,23 +1,38 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from "react";
+import { getAllEventsApi, deleteEventApi } from "../../api/eventApi";
 import { useNavigate } from "react-router";
 import toast from "react-hot-toast";
 import { MoreVertical } from "lucide-react";
 import { PiSlidersHorizontalBold } from "react-icons/pi";
 import { TiArrowSortedUp, TiArrowSortedDown } from "react-icons/ti";
-import { AppEvent } from "./AddEvent";
+import { HOST_URL } from "../../api/api";
 
-const STORAGE_KEY = "events";
+type Event = {
+  _id: string;
+  title: string;
+  description: string;
+  date: string;
+  location: string;
+  categories: string;
+  image: string;
+};
 
-type SortKey = "name" | "date" | "location" | "category";
+
+
+// const STORAGE_KEY = "events";
+
+type SortKey = "title" | "date" | "location" | "categories";
 
 export default function EventList() {
   const navigate = useNavigate();
 
-  const [events, setEvents] = useState<AppEvent[]>([]);
+  const [events, setEvents] = useState<Event[]>([]);
+  const [eventCategories, setEventCategories] = useState<string[]>([]);
+
   const [openMenu, setOpenMenu] = useState<string | null>(null);
 
-  const [sortKey, setSortKey] = useState<SortKey>("name");
+  const [sortKey, setSortKey] = useState<SortKey>("title");
   const [order, setOrder] = useState<"asc" | "desc">("asc");
 
   const [search, setSearch] = useState("");
@@ -28,7 +43,7 @@ export default function EventList() {
 
   const [tempDate, setTempDate] = useState("");
   const [tempLocation, setTempLocation] = useState("");
-  const [viewEvent, setViewEvent] = useState<AppEvent | null>(null);
+  const [viewEvent, setViewEvent] = useState<Event | null>(null);
   const [categoryFilter, setCategoryFilter] = useState("");
   const [tempCategory, setTempCategory] = useState("");
 
@@ -37,10 +52,40 @@ export default function EventList() {
   const ITEMS_PER_PAGE = 10;
 
   /* ---------- LOAD ---------- */
-  function loadEvents() {
-    const data = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
-    setEvents(data);
+ 
+const loadEvents = async () => {
+  try {
+    const res = await getAllEventsApi();
+ 
+    const formatted = res.data.data.map((e: any) => ({
+      ...e,
+      image: import.meta.env.VITE_API_BASE_URL + e.image
+    }));
+ 
+    setEvents(formatted);
+  } catch {
+    toast.error("Failed to load events");
   }
+};
+const loadEventCategories = async () => {
+  try {
+    const res = await fetch(
+      `${import.meta.env.VITE_API_BASE_URL}/api/categories`
+    );
+    const data = await res.json();
+
+    const names = data.data.map((c: any) => c.name);
+    setEventCategories(names);
+  } catch (err) {
+    console.error("Failed to load categories", err);
+  }
+};
+
+ 
+useEffect(() => {
+  loadEvents();
+  loadEventCategories();
+}, []);
 
   useEffect(() => {
     loadEvents();
@@ -95,35 +140,44 @@ export default function EventList() {
   };
 
   /* ---------- DELETE ---------- */
-  const handleDelete = (id: string) => {
-    const updated = events.filter((e) => e.id !== id);
-    setEvents(updated);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-    toast.success("Event deleted");
-  };
+const handleDelete = async (id: string) => {
+  try {
+    await deleteEventApi(id);
+    toast.success("Event Deleted");
+    loadEvents();
+  } catch {
+    toast.error("Delete failed");
+  }
+};
+
 
   /* ---------- FILTER + SEARCH ---------- */
   const filtered = events.filter((e) => {
-    const v = search.toLowerCase();
+  const v = search.toLowerCase();
 
-    const matchesSearch =
-      e.name.toLowerCase().includes(v) ||
-      e.description.toLowerCase().includes(v) ||
-      e.location.toLowerCase().includes(v) ||
-      e.date.toLowerCase().includes(v) ||
-      e.description.toLowerCase().includes(v);
+  const matchesSearch =
+    e.title.toLowerCase().includes(v) ||
+    e.description.toLowerCase().includes(v) ||
+    e.location.toLowerCase().includes(v) ||
+    e.date.toLowerCase().includes(v);
 
-    const matchesDate = dateFilter ? e.date === dateFilter : true;
-    const matchesLocation = locationFilter
-      ? e.location.toLowerCase().includes(locationFilter.toLowerCase())
-      : true;
+  const matchesDate = dateFilter ? e.date === dateFilter : true;
 
-    const matchesCategory = categoryFilter
-      ? e.category === categoryFilter
-      : true;
+  const matchesLocation = locationFilter
+    ? e.location.toLowerCase().includes(locationFilter.toLowerCase())
+    : true;
 
-    return matchesSearch && matchesDate && matchesLocation && matchesCategory;
-  });
+  // const matchesCategory = categoryFilter
+  //   ? e.categories === categoryFilter
+  //   : true;
+  const matchesCategory = categoryFilter
+  ? e.categories?.trim().toLowerCase() === categoryFilter.trim().toLowerCase()
+  : true;
+
+
+  return matchesSearch && matchesDate && matchesLocation && matchesCategory;
+});
+
 
   /* ---------- PAGINATION ---------- */
   const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
@@ -171,8 +225,8 @@ export default function EventList() {
   );
 
   const headers: { key: SortKey; label: string }[] = [
-    { key: "name", label: "Event" },
-    { key: "category", label: "Category" },
+    { key: "categories", label: "Category" },
+    { key: "title", label: "Event" },
     { key: "date", label: "Date" },
     { key: "location", label: "Location" },
   ];
@@ -246,15 +300,18 @@ export default function EventList() {
               <div>
                 <label className="text-xs">Category</label>
                 <select
-                  value={tempCategory}
-                  onChange={(e) => setTempCategory(e.target.value)}
-                  className="w-full border rounded-lg px-3 py-2 text-sm">
-                  <option value="">All</option>
-                  <option>Artist Information</option>
-                  <option>Art Form Details</option>
-                  <option>Cultural Events</option>
-                  <option>Others</option>
-                </select>
+                    value={tempCategory}
+                    onChange={(e) => setTempCategory(e.target.value)}
+                    className="w-full border rounded-lg px-3 py-2 text-sm">
+                    <option value="">All</option>
+
+                    {eventCategories.map((cat) => (
+                      <option key={cat} value={cat}>
+                        {cat}
+                      </option>
+                    ))}
+                  </select>
+
               </div>
               <div>
                 <label className="text-xs">Date</label>
@@ -319,21 +376,21 @@ export default function EventList() {
 
           <tbody>
             {paginated.map((ev) => (
-              <tr key={ev.id} className="border-t">
+              <tr key={ev._id} className="border-t">
                 <td className="p-3">
                   <img
-                    src={ev.imageUrl}
-                    alt={ev.name}
+                    src={ev.image}
+                    alt={ev.title}
                     className="w-12 h-12 rounded object-cover"
                   />
                 </td>
 
                 <td className="p-3 font-medium text-[#83261D]">
-                  {ev.category}
+                  {ev.categories}
                 </td>
 
                 <td className="p-3">
-                  <p className="font-medium">{ev.name}</p>
+                  <p className="font-medium">{ev.title}</p>
                   <p className="text-xs text-gray-500 truncate max-w-[240px]">
                     {ev.description}
                   </p>
@@ -345,12 +402,12 @@ export default function EventList() {
                 <td className="p-3 text-right relative event-menu">
                   <button
                     onClick={() =>
-                      setOpenMenu(openMenu === ev.id ? null : ev.id)
+                      setOpenMenu(openMenu === ev._id ? null : ev._id)
                     }>
                     <MoreVertical size={18} />
                   </button>
 
-                  {openMenu === ev.id && (
+                  {openMenu === ev._id && (
                     <div className="absolute right-4 top-10 w-32 bg-white border rounded-lg shadow z-20">
                       <button
                         onClick={() => {
@@ -368,7 +425,7 @@ export default function EventList() {
                       </button>
 
                       <button
-                        onClick={() => handleDelete(ev.id)}
+                        onClick={() => handleDelete(ev._id)}
                         className="block w-full px-4 py-2 text-left text-red-600 hover:bg-gray-100">
                         Delete
                       </button>
@@ -397,11 +454,11 @@ export default function EventList() {
                         </button>
 
                         <div className="relative h-64 overflow-hidden">
-                          {viewEvent.imageUrl ? (
+                          {viewEvent.image ? (
                             <>
                               <img
-                                src={viewEvent.imageUrl}
-                                alt={viewEvent.name}
+                                src={viewEvent.image}
+                                alt={viewEvent.title}
                                 className="w-full h-full object-cover transform hover:scale-105 transition-transform duration-700"
                               />
                               <div className="absolute inset-0 bg-gradient-to-t from-white via-white/20 to-transparent" />
@@ -431,10 +488,10 @@ export default function EventList() {
                           {/* Category Tag */}
                           <div className="inline-flex items-center gap-2 bg-[#83261D] text-white text-[10px] font-black uppercase tracking-[0.15em] px-4 py-2 rounded-xl shadow-xl mb-4">
                             <span className="w-2 h-2 bg-white rounded-full animate-pulse" />
-                            {viewEvent.category}
+                            {viewEvent.categories}
                           </div>
                           <h2 className="text-4xl font-extrabold text-gray-900 tracking-tight leading-tight">
-                            {viewEvent.name}
+                            {viewEvent.title}
                           </h2>
                           <div className="flex flex-col sm:flex-row sm:items-center gap-4 mt-4 mb-6">
                             <div className="flex items-center text-gray-600">
