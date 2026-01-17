@@ -174,9 +174,6 @@ const handleDelete = async (id: string) => {
   return matchesSearch && matchesDate && matchesLocation && matchesCategory;
 });
 
-
-  
-
   /* ---------- FILTER ACTIONS ---------- */
   const applyFilters = () => {
     setDateFilter(tempDate);

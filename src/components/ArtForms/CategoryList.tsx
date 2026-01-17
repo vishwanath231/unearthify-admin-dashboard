@@ -10,6 +10,7 @@ import {
   deleteArtTypeApi,
 } from "../../api/artCategoryApi";
 import toast from "react-hot-toast";
+import { HOST_URL } from "../../api/api";
 
 type ArtType = {
   _id?: string;
@@ -46,7 +47,11 @@ export default function CategoryList() {
   /* ---------- LOAD ---------- */
   async function load() {
     const res = await getAllCategoriesApi();
-    setCategories(res.data.data);
+    const formatted = res.data.data.map((a: any) => ({
+            ...a,
+            image: `${HOST_URL + a.image}`,
+          }))
+    setCategories(formatted);
   }
 
   useEffect(() => {
