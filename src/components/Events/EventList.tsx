@@ -6,7 +6,6 @@ import toast from "react-hot-toast";
 import { MoreVertical } from "lucide-react";
 import { PiSlidersHorizontalBold } from "react-icons/pi";
 import { TiArrowSortedUp, TiArrowSortedDown } from "react-icons/ti";
-import { HOST_URL } from "../../api/api";
 
 type Event = {
   _id: string;
@@ -17,8 +16,6 @@ type Event = {
   categories: string;
   image: string;
 };
-
-
 
 // const STORAGE_KEY = "events";
 
@@ -176,9 +173,6 @@ const handleDelete = async (id: string) => {
 
   return matchesSearch && matchesDate && matchesLocation && matchesCategory;
 });
-
-
-  
 
   /* ---------- FILTER ACTIONS ---------- */
   const applyFilters = () => {

@@ -1,4 +1,4 @@
-import { createEventApi, updateEventApi } from "../../api/eventApi";
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useRef, useState, ChangeEvent } from "react";
 import toast from "react-hot-toast";
 import { useNavigate, useLocation } from "react-router";
@@ -18,8 +18,6 @@ type Category = {
   _id: string;
   name: string;
 };
-
-
 
 export default function AddEvent() {
   const navigate = useNavigate();
@@ -81,8 +79,6 @@ useEffect(() => {
         categoryArray = res.data.categories;
       }
 
-
-
       setCategories(categoryArray);
     } catch (error) {
       console.error(error);
@@ -93,10 +89,6 @@ useEffect(() => {
 
   fetchCategories();
 }, []);
-
-
-
-
 
   /* ---------- IMAGE ---------- */
   const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -138,8 +130,6 @@ useEffect(() => {
   ) {
     setForm({ ...form, [e.target.name]: e.target.value });
   }
-
- 
 
   /* ---------- SUBMIT ---------- */
  
@@ -204,9 +194,6 @@ async function handleSubmit() {
     }
 
   }
-
- 
- 
 
   return (
     <div className="relative bg-white p-4 rounded-lg shadow">

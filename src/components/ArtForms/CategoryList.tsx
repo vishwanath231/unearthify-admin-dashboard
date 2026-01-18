@@ -374,7 +374,8 @@ export default function CategoryList() {
       {viewArt && (
         <div className="fixed inset-0 soft-blur flex items-center justify-center z-50 px-4">
           {/* <div className="bg-white w-full max-w-xl rounded-[32px] overflow-hidden relative shadow-[0_30px_70px_rgba(0,0,0,0.5)] border border-white/20 animate-in zoom-in-95 duration-300"> */}
-          <div className="bg-white w-full max-w-xl max-h-[90vh] rounded-[32px] overflow-hidden relative shadow-[0_30px_70px_rgba(0,0,0,0.5)] border border-white/20">
+          <div className=" bg-white w-full max-w-xl max-h-[90vh] rounded-[32px] overflow-y-auto relative shadow-[0_30px_70px_rgba(0,0,0,0.5)] border border-white/20 animate-in zoom-in-95 duration-300">
+
             <button
               onClick={() => setViewArt(null)}
               className="absolute top-5 right-5 z-50 bg-black hover:bg-[#83261D] backdrop-blur-md text-white rounded-full w-10 h-10 flex items-center justify-center transition-all duration-300 shadow-xl group border border-white/20">
@@ -393,15 +394,14 @@ export default function CategoryList() {
               </svg>
             </button>
 
-            {/* <div className="relative h-80 w-full overflow-hidden bg-gray-100"> */}
-            <div className="relative h-56 w-full overflow-hidden bg-gray-100">
+            <div className="relative h-80 w-full overflow-hidden bg-gray-100">
               <img
                 src={import.meta.env.VITE_API_BASE_URL + viewArt.image}
                 alt={viewArt.name}
                 className="w-full h-full object-cover transform hover:scale-105 transition-transform duration-1000"
               />
             </div>
-            <div className="overflow-y-auto max-h-[calc(90vh-14rem)]">
+            
               <div className="px-10 pb-10 pt-8 relative">
                 {/* Label */}
                 <span className="inline-block mb-2 text-xs font-bold tracking-widest text-[#83261D] uppercase">
@@ -423,7 +423,7 @@ export default function CategoryList() {
                   </p>
                 </div>
               </div>
-            </div>
+            
             <div className="flex justify-end gap-3 m-4">
               <button
                 onClick={() =>
