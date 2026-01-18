@@ -2,8 +2,12 @@
 import { useEffect, useState, useRef, ChangeEvent } from "react";
 import CreatableSelect from "react-select/creatable";
 import toast from "react-hot-toast";
-import { useNavigate } from "react-router";
-import { getAllCategoriesApi } from "../../api/artCategoryApi";
+import { useNavigate, useLocation } from "react-router";
+import {
+  getAllCategoriesApi,
+  updateArtTypeApi,
+  addArtTypeApi,
+} from "../../api/artCategoryApi";
 import api from "../../api/axios";
 
 type Category = {
@@ -18,6 +22,7 @@ type ArtType = {
   name: string;
   description: string;
   image: File | null;
+  existingImage?: string;
 };
 
 export default function AddCategory() {
@@ -31,6 +36,9 @@ export default function AddCategory() {
   const categoryFileRef = useRef<HTMLInputElement | null>(null);
 
   const navigate = useNavigate();
+  const location = useLocation();
+  const editData = location.state as any;
+  const isEditArtType = editData?.mode === "editArtType";
 
   const [artTypes, setArtTypes] = useState<ArtType[]>([
     { id: Date.now().toString(), name: "", description: "", image: null },
@@ -47,18 +55,42 @@ export default function AddCategory() {
   }, []);
 
   useEffect(() => {
-  return () => {
-    if (categoryImage) URL.revokeObjectURL(URL.createObjectURL(categoryImage));
-    artTypes.forEach(a => {
-      if (a.image) URL.revokeObjectURL(URL.createObjectURL(a.image));
-    });
-  };
-}, [categoryImage, artTypes]);
+    return () => {
+      if (categoryImage)
+        URL.revokeObjectURL(URL.createObjectURL(categoryImage));
+      artTypes.forEach((a) => {
+        if (a.image) URL.revokeObjectURL(URL.createObjectURL(a.image));
+      });
+    };
+  }, [categoryImage, artTypes]);
 
   const categoryOptions = categories.map((c) => ({
     value: c._id,
     label: c.name,
   }));
+
+  useEffect(() => {
+    if (isEditArtType) {
+      const { data } = editData;
+
+      setSelectedCategory({
+        value: data.category._id,
+        label: data.category.name,
+      });
+
+      setCategoryDescription(data.category.description);
+
+      setArtTypes([
+        {
+          id: data._id,
+          name: data.name,
+          description: data.description,
+          image: null,
+          existingImage: data.image,
+        },
+      ]);
+    }
+  }, []);
 
   /* ---------- CATEGORY SELECT ---------- */
   function handleCategorySelect(option: any) {
@@ -163,222 +195,254 @@ export default function AddCategory() {
       return;
     }
 
-    if (selectedCategory?.isNew && !categoryImage) {
+    if (!isEditArtType && selectedCategory?.isNew && !categoryImage) {
       toast.error("Category image required");
       return;
     }
 
     for (let i = 0; i < artTypes.length; i++) {
-      if (!artTypes[i].name || !artTypes[i].description || !artTypes[i].image) {
+      if (!artTypes[i].name || !artTypes[i].description) {
         toast.error("All art type fields required");
+        return;
+      }
+
+      if (!isEditArtType && !artTypes[i].image) {
+        toast.error("Art type image required");
+        return;
+      }
+    }
+
+    if (isEditArtType) {
+      try {
+        const art = artTypes[0];
+
+        const formData = new FormData();
+        formData.append("name", art.name);
+        formData.append("description", art.description);
+
+        if (art.image) {
+          formData.append("image", art.image);
+        }
+
+        await updateArtTypeApi(editData.data.category._id, art.id, formData);
+
+        toast.success("Art type updated");
+        navigate("/categories");
+        return;
+      } catch (err) {
+        console.error(err);
+        toast.error("Update failed");
         return;
       }
     }
 
     try {
-      const formData = new FormData();
+  const formData = new FormData();
 
-      formData.append("categoryName", selectedCategory.label);
-      formData.append("categoryDescription", categoryDescription);
+  formData.append("categoryName", selectedCategory.label);
+  formData.append("categoryDescription", categoryDescription);
 
-      // category image
-      if (categoryImage) {
-        formData.append("categoryImage", categoryImage);
-      }
+  if (categoryImage) {
+    formData.append("categoryImage", categoryImage);
+  }
 
-      // art types text
-      const artPayload = artTypes.map((a) => ({
-        name: a.name,
-        description: a.description,
-      }));
+  const artPayload = artTypes.map((a) => ({
+    name: a.name,
+    description: a.description,
+  }));
 
-      formData.append("artTypes", JSON.stringify(artPayload));
+  formData.append("artTypes", JSON.stringify(artPayload));
 
-      artTypes.forEach((a) => {
-        if (a.image) formData.append("image", a.image);
-      });
+  artTypes.forEach((a) => {
+    if (a.image) formData.append("image", a.image);
+  });
 
-      if (!selectedCategory.isNew) {
-        toast.error("Select a new category only. Existing coming next step.");
-        return;
-      }
+  if (selectedCategory.isNew) {
+    // ✅ create new category
+    await api.post("/categories", formData);
+    toast.success("Category created");
+  } else {
+    // ✅ add art type to existing category
+    await addArtTypeApi(selectedCategory.value, formData);
+    toast.success("Art type added");
+  }
 
-      await api.post("/categories", formData);
+  navigate("/categories");
+} catch (err: any) {
+  toast.error(err.response?.data?.message || "Failed");
+}
 
-      toast.success("Category created");
-      navigate("/categories");
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || "Failed");
-    }
   }
 
   /* ---------- UI ---------- */
   return (
     <div className="bg-white p-6 rounded-xl shadow space-y-8">
       {/* CATEGORY */}
-      <div className="border rounded-xl p-5 space-y-4">
-        <h2 className="font-semibold text-lg">Category</h2>
+      <h2 className="font-semibold text-lg">Category</h2>
 
-        <div className="space-y-1 relative">
-          <div className="flex items-center gap-2">
-            <label className="text-sm font-medium">
-              Select or Create Category
-            </label>
+      <div className="space-y-1 relative">
+        <div className="flex items-center gap-2">
+          <label className="text-sm font-medium">
+            Select or Create Category
+          </label>
 
-            <div className="group relative cursor-pointer">
-              <span className="inline-flex items-center justify-center w-4 h-4 text-xs font-bold rounded-full bg-gray-200 text-gray-700">
-                i
-              </span>
+          <div className="group relative cursor-pointer">
+            <span className="inline-flex items-center justify-center w-4 h-4 text-xs font-bold rounded-full bg-gray-200 text-gray-700">
+              i
+            </span>
 
-              {/* Tooltip */}
-              <div className="absolute left-1/2 -translate-x-1/2 mt-2 w-64 scale-0 group-hover:scale-100 transition-transform origin-top bg-black text-white text-xs rounded-lg px-3 py-2 z-50 shadow-lg">
-                Choose an existing category or type a new one to create it.
-                <br />
-                If you create a new category, description and image will be
-                required.
-              </div>
+            {/* Tooltip */}
+            <div className="absolute left-1/2 -translate-x-1/2 mt-2 w-64 scale-0 group-hover:scale-100 transition-transform origin-top bg-black text-white text-xs rounded-lg px-3 py-2 z-50 shadow-lg">
+              Choose an existing category or type a new one to create it.
+              <br />
+              If you create a new category, description and image will be
+              required.
             </div>
           </div>
-
-          <CreatableSelect
-            isClearable
-            options={categoryOptions}
-            value={selectedCategory}
-            inputValue={categoryInput}
-            onInputChange={(val) => setCategoryInput(val)}
-            onChange={handleCategorySelect}
-            placeholder="Select or type category..."
-          />
         </div>
 
+        <CreatableSelect
+          isDisabled={isEditArtType}
+          isClearable
+          options={categoryOptions}
+          value={selectedCategory}
+          inputValue={categoryInput}
+          onInputChange={(val) => setCategoryInput(val)}
+          onChange={handleCategorySelect}
+          placeholder="Select or type category..."
+        />
+      </div>
+
+      <div className="space-y-1">
+        <label className="text-sm font-medium">Category Description</label>
+        <textarea
+          disabled={selectedCategory && !selectedCategory.isNew}
+          value={categoryDescription}
+          onChange={(e) => setCategoryDescription(e.target.value)}
+          className="input h-24 disabled:bg-gray-100"
+          placeholder="Category description"
+        />
+      </div>
+
+      {selectedCategory?.isNew && (
         <div className="space-y-1">
-          <label className="text-sm font-medium">Category Description</label>
-          <textarea
-            disabled={selectedCategory && !selectedCategory.isNew}
-            value={categoryDescription}
-            onChange={(e) => setCategoryDescription(e.target.value)}
-            className="input h-24 disabled:bg-gray-100"
-            placeholder="Category description"
-          />
-        </div>
+          <label className="text-sm font-medium">Category Image</label>
 
-        {selectedCategory?.isNew && (
+          <div className="flex items-center gap-4">
+            <label className="px-4 py-2 border rounded cursor-pointer bg-gray-50">
+              Choose Image
+              <input
+                ref={categoryFileRef}
+                type="file"
+                accept="image/*"
+                onChange={handleCategoryImage}
+                className="hidden"
+              />
+            </label>
+
+            {categoryImage && (
+              <div className="relative w-24 h-24">
+                <img
+                  src={URL.createObjectURL(categoryImage)}
+                  className="w-full h-full object-cover rounded border"
+                />
+                <button
+                  onClick={removeCategoryImage}
+                  className="absolute -top-2 -right-2 bg-black text-white w-6 h-6 rounded-full">
+                  ×
+                </button>
+              </div>
+            )}
+          </div>
+
+          {categoryImageError && (
+            <p className="text-red-500 text-sm">{categoryImageError}</p>
+          )}
+        </div>
+      )}
+
+      {/* ART TYPES */}
+      <div className="flex justify-between items-center">
+        <h2 className="font-semibold text-lg">Art Types</h2>
+        <button
+          onClick={addArtType}
+          className="bg-[#83261D] text-white px-3 py-1 rounded text-sm">
+          + Assign another art type
+        </button>
+      </div>
+
+      {artTypes.map((art) => (
+        <div key={art.id} className="border rounded-lg p-4 space-y-3">
+          {artTypes.length > 1 && (
+            <div className="flex justify-end">
+              <button
+                onClick={() => removeArtType(art.id)}
+                className="text-red-600 text-sm">
+                Remove
+              </button>
+            </div>
+          )}
+
           <div className="space-y-1">
-            <label className="text-sm font-medium">Category Image</label>
+            <label className="text-sm font-medium">Art Type Name</label>
+            <input
+              value={art.name}
+              onChange={(e) => updateArtType(art.id, "name", e.target.value)}
+              className="input"
+              placeholder="Art type name"
+            />
+          </div>
+
+          <div className="space-y-1">
+            <label className="text-sm font-medium">Art Type Description</label>
+            <textarea
+              value={art.description}
+              onChange={(e) =>
+                updateArtType(art.id, "description", e.target.value)
+              }
+              className="input h-24"
+              placeholder="Art type description"
+            />
+          </div>
+
+          <div className="space-y-1">
+            <label className="text-sm font-medium">Art Type Image</label>
 
             <div className="flex items-center gap-4">
               <label className="px-4 py-2 border rounded cursor-pointer bg-gray-50">
                 Choose Image
                 <input
-                  ref={categoryFileRef}
                   type="file"
                   accept="image/*"
-                  onChange={handleCategoryImage}
+                  onChange={(e) => handleArtImage(art.id, e)}
                   className="hidden"
                 />
               </label>
 
-              {categoryImage && (
+              {(art.image || art.existingImage) && (
                 <div className="relative w-24 h-24">
                   <img
-                    src={URL.createObjectURL(categoryImage)}
+                    src={
+                      art.image
+                        ? URL.createObjectURL(art.image)
+                        : import.meta.env.VITE_API_BASE_URL + art.existingImage
+                    }
                     className="w-full h-full object-cover rounded border"
                   />
                   <button
-                    onClick={removeCategoryImage}
+                    onClick={() => {
+                      updateArtType(art.id, "image", null);
+                      updateArtType(art.id, "existingImage", undefined);
+                    }}
                     className="absolute -top-2 -right-2 bg-black text-white w-6 h-6 rounded-full">
                     ×
                   </button>
                 </div>
               )}
             </div>
-
-            {categoryImageError && (
-              <p className="text-red-500 text-sm">{categoryImageError}</p>
-            )}
           </div>
-        )}
-      </div>
-
-      {/* ART TYPES */}
-      <div className="border rounded-xl p-5 space-y-5">
-        <div className="flex justify-between items-center">
-          <h2 className="font-semibold text-lg">Art Types</h2>
-          <button
-            onClick={addArtType}
-            className="bg-[#83261D] text-white px-3 py-1 rounded text-sm">
-            + Assign another art type
-          </button>
         </div>
-
-        {artTypes.map((art) => (
-          <div key={art.id} className="border rounded-lg p-4 space-y-3">
-            {artTypes.length > 1 && (
-              <div className="flex justify-end">
-                <button
-                  onClick={() => removeArtType(art.id)}
-                  className="text-red-600 text-sm">
-                  Remove
-                </button>
-              </div>
-            )}
-
-            <div className="space-y-1">
-              <label className="text-sm font-medium">Art Type Name</label>
-              <input
-                value={art.name}
-                onChange={(e) => updateArtType(art.id, "name", e.target.value)}
-                className="input"
-                placeholder="Art type name"
-              />
-            </div>
-
-            <div className="space-y-1">
-              <label className="text-sm font-medium">
-                Art Type Description
-              </label>
-              <textarea
-                value={art.description}
-                onChange={(e) =>
-                  updateArtType(art.id, "description", e.target.value)
-                }
-                className="input h-24"
-                placeholder="Art type description"
-              />
-            </div>
-
-            <div className="space-y-1">
-              <label className="text-sm font-medium">Art Type Image</label>
-
-              <div className="flex items-center gap-4">
-                <label className="px-4 py-2 border rounded cursor-pointer bg-gray-50">
-                  Choose Image
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => handleArtImage(art.id, e)}
-                    className="hidden"
-                  />
-                </label>
-
-                {art.image && (
-                  <div className="relative w-24 h-24">
-                    <img
-                      src={URL.createObjectURL(art.image)}
-                      className="w-full h-full object-cover rounded border"
-                    />
-                    <button
-                      onClick={() => updateArtType(art.id, "image", null)}
-                      className="absolute -top-2 -right-2 bg-black text-white w-6 h-6 rounded-full">
-                      ×
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
+      ))}
 
       {/* ACTION */}
       <div className="flex justify-end gap-3">
@@ -391,7 +455,7 @@ export default function AddCategory() {
         <button
           onClick={handleSubmit}
           className="px-5 py-2 bg-[#83261D] text-white rounded-lg">
-          Save
+          {isEditArtType ? "Update" : "Save"}
         </button>
       </div>
     </div>
