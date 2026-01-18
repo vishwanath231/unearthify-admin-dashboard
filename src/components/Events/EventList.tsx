@@ -144,8 +144,6 @@ const handleDelete = async (id: string) => {
   }
 };
  
- console.log("Events are : ",events);
- console.log("Events are : ",events.length);
   /* ---------- FILTER + SEARCH ---------- */
   const filtered = events.filter((e) => {
   const v = search.toLowerCase();

@@ -10,7 +10,6 @@ import {
   deleteArtTypeApi,
 } from "../../api/artCategoryApi";
 import toast from "react-hot-toast";
-import { HOST_URL } from "../../api/api";
 
 type ArtType = {
   _id?: string;
@@ -47,11 +46,7 @@ export default function CategoryList() {
   /* ---------- LOAD ---------- */
   async function load() {
     const res = await getAllCategoriesApi();
-    const formatted = res.data.data.map((a: any) => ({
-            ...a,
-            image: `${HOST_URL + a.image}`,
-          }))
-    setCategories(formatted);
+    setCategories(res.data.data);
   }
 
   useEffect(() => {
@@ -378,7 +373,8 @@ export default function CategoryList() {
 
       {viewArt && (
         <div className="fixed inset-0 soft-blur flex items-center justify-center z-50 px-4">
-          <div className="bg-white w-full max-w-xl rounded-[32px] overflow-hidden relative shadow-[0_30px_70px_rgba(0,0,0,0.5)] border border-white/20 animate-in zoom-in-95 duration-300">
+          {/* <div className="bg-white w-full max-w-xl rounded-[32px] overflow-hidden relative shadow-[0_30px_70px_rgba(0,0,0,0.5)] border border-white/20 animate-in zoom-in-95 duration-300"> */}
+          <div className="bg-white w-full max-w-xl max-h-[90vh] rounded-[32px] overflow-hidden relative shadow-[0_30px_70px_rgba(0,0,0,0.5)] border border-white/20">
             <button
               onClick={() => setViewArt(null)}
               className="absolute top-5 right-5 z-50 bg-black hover:bg-[#83261D] backdrop-blur-md text-white rounded-full w-10 h-10 flex items-center justify-center transition-all duration-300 shadow-xl group border border-white/20">
@@ -397,33 +393,35 @@ export default function CategoryList() {
               </svg>
             </button>
 
-            <div className="relative h-80 w-full overflow-hidden bg-gray-100">
+            {/* <div className="relative h-80 w-full overflow-hidden bg-gray-100"> */}
+            <div className="relative h-56 w-full overflow-hidden bg-gray-100">
               <img
                 src={import.meta.env.VITE_API_BASE_URL + viewArt.image}
                 alt={viewArt.name}
                 className="w-full h-full object-cover transform hover:scale-105 transition-transform duration-1000"
               />
             </div>
+            <div className="overflow-y-auto max-h-[calc(90vh-14rem)]">
+              <div className="px-10 pb-10 pt-8 relative">
+                {/* Label */}
+                <span className="inline-block mb-2 text-xs font-bold tracking-widest text-[#83261D] uppercase">
+                  Art Type
+                </span>
 
-            <div className="px-10 pb-10 pt-8 relative">
-              {/* Label */}
-              <span className="inline-block mb-2 text-xs font-bold tracking-widest text-[#83261D] uppercase">
-                Art Type
-              </span>
+                {/* Title */}
+                <h2 className="text-3xl font-black tracking-tighter leading-none mb-6">
+                  {viewArt.name}
+                </h2>
 
-              {/* Title */}
-              <h2 className="text-3xl font-black tracking-tighter leading-none mb-6">
-                {viewArt.name}
-              </h2>
-
-              {/* Description */}
-              <span className="inline-block mb-2 text-xs font-bold tracking-widest text-[#83261D] uppercase">
-                Type Description
-              </span>
-              <div className="relative">
-                <p className="text-3xl font-black tracking-tighter leading-none mb-6">
-                  {viewArt.description}
-                </p>
+                {/* Description */}
+                <span className="inline-block mb-2 text-xs font-bold tracking-widest text-[#83261D] uppercase">
+                  Type Description
+                </span>
+                <div className="relative">
+                  <p className="text-3xl font-black tracking-tighter leading-none mb-6">
+                    {viewArt.description}
+                  </p>
+                </div>
               </div>
             </div>
             <div className="flex justify-end gap-3 m-4">
