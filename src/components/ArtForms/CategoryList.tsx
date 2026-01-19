@@ -409,16 +409,18 @@ export default function CategoryList() {
                 </span>
 
                 {/* Title */}
-                <h2 className="text-3xl font-black tracking-tighter leading-none mb-6">
+                <h2 className="text-2xl font-black font-bold leading-none mb-6">
                   {viewArt.name}
                 </h2>
 
                 {/* Description */}
-                <span className="inline-block mb-2 text-xs font-bold tracking-widest text-[#83261D] uppercase">
+                <span className="inline-block mb-2 text-xl font-bold tracking-widest text-[#83261D] uppercase">
                   Type Description
                 </span>
                 <div className="relative">
-                  <p className="text-3xl font-black tracking-tighter leading-none mb-6">
+                  
+                  <p className="text-base font-normal leading-relaxed  text-justify text-gray-800 mb-6 max-w-[90%]">
+
                     {viewArt.description}
                   </p>
                 </div>
