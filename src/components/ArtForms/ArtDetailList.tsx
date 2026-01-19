@@ -480,7 +480,7 @@ export default function ArtDetailList() {
 
       {viewItem && (
         <div className="fixed inset-0 soft-blur flex items-center justify-center z-50 px-4">
-          <div className="bg-white w-full max-w-lg rounded-[2rem] overflow-hidden relative shadow-2xl">
+          <div className="bg-white w-full max-w-lg max-h-[90vh] rounded-[2rem] overflow-y-auto relative shadow-2xl">
             <div className="bg-[#83261D] px-8 py-10 text-white relative overflow-hidden">
               <div className="absolute top-0 right-0 opacity-10 pointer-events-none">
                 <svg width="200" height="200" viewBox="0 0 100 100">

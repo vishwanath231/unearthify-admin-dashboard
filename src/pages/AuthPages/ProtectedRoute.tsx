@@ -1,5 +1,5 @@
 import { Navigate } from "react-router";
-import { getToken, isTokenExpired, logout, autoLogout, startIdleLogout } from "./Auth";
+import { getToken, isTokenExpired, logout, autoLogout } from "./Auth";
 import toast from "react-hot-toast";
 import { JSX, useEffect, useState } from "react";
 
@@ -17,7 +17,7 @@ export default function ProtectedRoute({ children }: { children: JSX.Element }) 
     }
 
     autoLogout();        // exact expiry logout
-    startIdleLogout(60); // idle logout
+    // startIdleLogout(60); // idle logout
 
     const interval = setInterval(() => {
       const token = getToken();

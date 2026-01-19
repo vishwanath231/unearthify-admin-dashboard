@@ -378,7 +378,7 @@ export default function CategoryList() {
 
       {viewArt && (
         <div className="fixed inset-0 soft-blur flex items-center justify-center z-50 px-4">
-          <div className="bg-white w-full max-w-xl rounded-[32px] overflow-hidden relative shadow-[0_30px_70px_rgba(0,0,0,0.5)] border border-white/20 animate-in zoom-in-95 duration-300">
+          <div className="bg-white w-full max-w-xl max-h-[90vh] rounded-[32px] overflow-y-auto relative shadow-[0_30px_70px_rgba(0,0,0,0.5)] border border-white/20 animate-in zoom-in-95 duration-300">
             <button
               onClick={() => setViewArt(null)}
               className="absolute top-5 right-5 z-50 bg-black hover:bg-[#83261D] backdrop-blur-md text-white rounded-full w-10 h-10 flex items-center justify-center transition-all duration-300 shadow-xl group border border-white/20">
