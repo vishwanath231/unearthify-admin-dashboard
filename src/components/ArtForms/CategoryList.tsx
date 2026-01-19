@@ -311,7 +311,7 @@ export default function CategoryList() {
               <tr key={cat._id} className="border-t align-top">
                 <td className="p-3">
                   <img
-                    src={import.meta.env.VITE_API_BASE_URL + cat.image}
+                    src= {cat.image}
                     className="w-12 h-12 rounded object-cover border"
                   />
                 </td>
