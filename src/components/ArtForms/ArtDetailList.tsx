@@ -212,7 +212,7 @@ export default function ArtDetailList() {
                     ×
                   </button>
                 </div>
-              ) : null
+              ) : null,
             )}
           </div>
         </div>
@@ -302,127 +302,129 @@ export default function ArtDetailList() {
       {/* TABLE */}
       <table className="w-full text-sm border border-[#F1EEE7]">
         <thead>
-          <th
-            className="p-3 text-left cursor-pointer select-none"
-            onClick={() => {
-              setSortKey("origin");
-              setSortOrder(sortOrder === "asc" ? "desc" : "asc");
-            }}>
-            <div className="flex items-center gap-1">
-              <span>Origin</span>
-              <div className="flex flex-col leading-none">
-                <TiArrowSortedUp
-                  size={14}
-                  className={
-                    sortKey === "origin" && sortOrder === "asc"
-                      ? "text-black"
-                      : "text-gray-300"
-                  }
-                />
-                <TiArrowSortedDown
-                  size={14}
-                  className={
-                    sortKey === "origin" && sortOrder === "desc"
-                      ? "text-black"
-                      : "text-gray-300"
-                  }
-                />
+          <tr className="border-b bg-[#F8E7DC]">
+            <th
+              className="p-3 text-left cursor-pointer select-none"
+              onClick={() => {
+                setSortKey("origin");
+                setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+              }}>
+              <div className="flex items-center gap-1">
+                <span>Origin</span>
+                <div className="flex flex-col leading-none">
+                  <TiArrowSortedUp
+                    size={14}
+                    className={
+                      sortKey === "origin" && sortOrder === "asc"
+                        ? "text-black"
+                        : "text-gray-300"
+                    }
+                  />
+                  <TiArrowSortedDown
+                    size={14}
+                    className={
+                      sortKey === "origin" && sortOrder === "desc"
+                        ? "text-black"
+                        : "text-gray-300"
+                    }
+                  />
+                </div>
               </div>
-            </div>
-          </th>
+            </th>
 
-          {/* MATERIALS (NUMBER) */}
-          <th
-            className="p-3 text-left cursor-pointer select-none"
-            onClick={() => {
-              setSortKey("materials");
-              setSortOrder(sortOrder === "asc" ? "desc" : "asc");
-            }}>
-            <div className="flex items-center gap-1">
-              <span>Materials</span>
-              <div className="flex flex-col leading-none">
-                <TiArrowSortedUp
-                  size={14}
-                  className={
-                    sortKey === "materials" && sortOrder === "asc"
-                      ? "text-black"
-                      : "text-gray-300"
-                  }
-                />
-                <TiArrowSortedDown
-                  size={14}
-                  className={
-                    sortKey === "materials" && sortOrder === "desc"
-                      ? "text-black"
-                      : "text-gray-300"
-                  }
-                />
+            {/* MATERIALS (NUMBER) */}
+            <th
+              className="p-3 text-left cursor-pointer select-none"
+              onClick={() => {
+                setSortKey("materials");
+                setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+              }}>
+              <div className="flex items-center gap-1">
+                <span>Materials</span>
+                <div className="flex flex-col leading-none">
+                  <TiArrowSortedUp
+                    size={14}
+                    className={
+                      sortKey === "materials" && sortOrder === "asc"
+                        ? "text-black"
+                        : "text-gray-300"
+                    }
+                  />
+                  <TiArrowSortedDown
+                    size={14}
+                    className={
+                      sortKey === "materials" && sortOrder === "desc"
+                        ? "text-black"
+                        : "text-gray-300"
+                    }
+                  />
+                </div>
               </div>
-            </div>
-          </th>
+            </th>
 
-          {/* FAMOUS ARTIST (A–Z) */}
-          <th
-            className="p-3 text-left cursor-pointer select-none"
-            onClick={() => {
-              setSortKey("artist");
-              setSortOrder(sortOrder === "asc" ? "desc" : "asc");
-            }}>
-            <div className="flex items-center gap-1">
-              <span>Famous Artist</span>
-              <div className="flex flex-col leading-none">
-                <TiArrowSortedUp
-                  size={14}
-                  className={
-                    sortKey === "artist" && sortOrder === "asc"
-                      ? "text-black"
-                      : "text-gray-300"
-                  }
-                />
-                <TiArrowSortedDown
-                  size={14}
-                  className={
-                    sortKey === "artist" && sortOrder === "desc"
-                      ? "text-black"
-                      : "text-gray-300"
-                  }
-                />
+            {/* FAMOUS ARTIST (A–Z) */}
+            <th
+              className="p-3 text-left cursor-pointer select-none"
+              onClick={() => {
+                setSortKey("artist");
+                setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+              }}>
+              <div className="flex items-center gap-1">
+                <span>Famous Artist</span>
+                <div className="flex flex-col leading-none">
+                  <TiArrowSortedUp
+                    size={14}
+                    className={
+                      sortKey === "artist" && sortOrder === "asc"
+                        ? "text-black"
+                        : "text-gray-300"
+                    }
+                  />
+                  <TiArrowSortedDown
+                    size={14}
+                    className={
+                      sortKey === "artist" && sortOrder === "desc"
+                        ? "text-black"
+                        : "text-gray-300"
+                    }
+                  />
+                </div>
               </div>
-            </div>
-          </th>
+            </th>
 
-          {/* REGION (A–Z) */}
-          <th
-            className="p-3 text-left cursor-pointer select-none"
-            onClick={() => {
-              setSortKey("region");
-              setSortOrder(sortOrder === "asc" ? "desc" : "asc");
-            }}>
-            <div className="flex items-center gap-1">
-              <span>Region</span>
-              <div className="flex flex-col leading-none">
-                <TiArrowSortedUp
-                  size={14}
-                  className={
-                    sortKey === "region" && sortOrder === "asc"
-                      ? "text-black"
-                      : "text-gray-300"
-                  }
-                />
-                <TiArrowSortedDown
-                  size={14}
-                  className={
-                    sortKey === "region" && sortOrder === "desc"
-                      ? "text-black"
-                      : "text-gray-300"
-                  }
-                />
+            {/* REGION (A–Z) */}
+            <th
+              className="p-3 text-left cursor-pointer select-none"
+              onClick={() => {
+                setSortKey("region");
+                setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+              }}>
+              <div className="flex items-center gap-1">
+                <span>Region</span>
+                <div className="flex flex-col leading-none">
+                  <TiArrowSortedUp
+                    size={14}
+                    className={
+                      sortKey === "region" && sortOrder === "asc"
+                        ? "text-black"
+                        : "text-gray-300"
+                    }
+                  />
+                  <TiArrowSortedDown
+                    size={14}
+                    className={
+                      sortKey === "region" && sortOrder === "desc"
+                        ? "text-black"
+                        : "text-gray-300"
+                    }
+                  />
+                </div>
               </div>
-            </div>
-          </th>
+            </th>
 
-          <th className="p-3 text-left">Website</th>
-          <th className="p-3 text-right"></th>
+            <th className="p-3 text-left">Website</th>
+            <th className="p-3 text-right"></th>
+          </tr>
         </thead>
 
         <tbody>
