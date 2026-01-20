@@ -425,7 +425,7 @@ export default function AddCategory() {
                     src={
                       art.image
                         ? URL.createObjectURL(art.image)
-                        : import.meta.env.VITE_API_BASE_URL + art.existingImage
+                        : art.existingImage
                     }
                     className="w-full h-full object-cover rounded border"
                   />

@@ -6,7 +6,11 @@ import { TiArrowSortedUp, TiArrowSortedDown } from "react-icons/ti";
 import { PiSlidersHorizontalBold } from "react-icons/pi";
 import { getAllArtistsApi, deleteArtistApi } from "../../api/artistApi";
 import toast from "react-hot-toast";
-import { HOST_URL } from "../../api/api";
+
+type ArtistImage = {
+  url: string;
+  imageId: string;
+};
 
 type Artist = {
   _id: string;
@@ -17,7 +21,7 @@ type Artist = {
   country: string;
   bio: string;
   image: string;
-  collection: string[];
+  collection: ArtistImage[];
   isFeatured: boolean;
   status: string;
 };
@@ -47,13 +51,7 @@ function ArtistsList() {
   const loadArtists = async () => {
     try {
       const res = await getAllArtistsApi();
-
-      const formatted = res.data.data.map((a: any) => ({
-        ...a,
-        image: `${HOST_URL + a.image}`,
-      }));
-
-      setArtists(formatted);
+      setArtists(res.data.data);
     } catch {
       toast.error("Failed to load artists");
     }

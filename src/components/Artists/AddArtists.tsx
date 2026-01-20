@@ -228,10 +228,19 @@ function AddArtists() {
 
           {/* Existing image name (if no preview) */}
           {!previewUrl && existingImage && (
-            <p className="text-sm text-gray-700">
-              Current image:{" "}
-              <span className="font-medium">{existingImage}</span>
-            </p>
+            <div className="relative w-24 h-24">
+              <img
+                src={existingImage}
+                alt="current"
+                className="w-full h-full object-cover rounded-lg border"
+              />
+              <button
+                type="button"
+                onClick={removeImage}
+                className="absolute -top-2 -right-2 bg-black text-white rounded-full w-6 h-6 flex items-center justify-center text-sm">
+                ×
+              </button>
+            </div>
           )}
         </div>
 

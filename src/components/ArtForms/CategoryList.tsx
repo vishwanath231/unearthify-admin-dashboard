@@ -10,7 +10,6 @@ import {
   deleteArtTypeApi,
 } from "../../api/artCategoryApi";
 import toast from "react-hot-toast";
-import { HOST_URL } from "../../api/api";
 
 type ArtType = {
   _id?: string;
@@ -47,11 +46,7 @@ export default function CategoryList() {
   /* ---------- LOAD ---------- */
   async function load() {
     const res = await getAllCategoriesApi();
-    const formatted = res.data.data.map((a: any) => ({
-            ...a,
-            image: `${HOST_URL + a.image}`,
-          }))
-    setCategories(formatted);
+    setCategories(res.data.data);
   }
 
   useEffect(() => {
@@ -399,7 +394,7 @@ export default function CategoryList() {
 
             <div className="relative h-80 w-full overflow-hidden bg-gray-100">
               <img
-                src={import.meta.env.VITE_API_BASE_URL + viewArt.image}
+                src={viewArt.image}
                 alt={viewArt.name}
                 className="w-full h-full object-cover transform hover:scale-105 transition-transform duration-1000"
               />
@@ -412,16 +407,16 @@ export default function CategoryList() {
               </span>
 
               {/* Title */}
-              <h2 className="text-3xl font-black tracking-tighter leading-none mb-6">
+              <h2 className="text-2xl font-bold leading-none mb-6">
                 {viewArt.name}
               </h2>
 
               {/* Description */}
-              <span className="inline-block mb-2 text-xs font-bold tracking-widest text-[#83261D] uppercase">
+              <span className="inline-block mb-2 text-xl font-bold tracking-widest text-[#83261D] uppercase">
                 Type Description
               </span>
               <div className="relative">
-                <p className="text-3xl font-black tracking-tighter leading-none mb-6">
+                <p className="text-base font-normal leading-relaxed text-justify text-gray-800 mb-6 max-w-[90%]">
                   {viewArt.description}
                 </p>
               </div>

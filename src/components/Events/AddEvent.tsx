@@ -134,65 +134,41 @@ useEffect(() => {
   /* ---------- SUBMIT ---------- */
  
 async function handleSubmit() {
-
     const { title, description, date, location, categories } = form;
- 
+
     if (!title || !description || !date || !location || !categories) {
-
       toast.error("All fields are required");
-
       return;
-
     }
  
     if (!editEvent && !imageFile) {
       toast.error("Image is required");
       return;
-
     }
  
     try {
-
       const formData = new FormData();
-
       formData.append("title", title);
-
       formData.append("description", description);
-
       formData.append("date", date);
-
       formData.append("location", location);
-
       formData.append("categories", categories);
  
       if (imageFile) {
-
         formData.append("image", imageFile);
-
       }
- 
+
       if (editEvent) {
-
         await api.put(`/events/${editEvent._id}`, formData);
-
         toast.success("Event updated");
-
       } else {
-
         await api.post("/events", formData);
-
         toast.success("Event created");
-
       }
- 
       navigate("/events");
-
     } catch (err: any) {
-
       toast.error(err.response?.data?.message || "Something went wrong");
-
     }
-
   }
 
   return (
@@ -227,9 +203,6 @@ async function handleSubmit() {
                   </option>
                 ))}
             </select>
-
-               
-
           </div>
           <div className="flex flex-col gap-1">
             <label className="text-sm font-medium text-gray-700">
