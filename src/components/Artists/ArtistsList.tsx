@@ -45,15 +45,20 @@ function ArtistsList() {
   const [tempState, setTempState] = useState("");
   const [tempArtForm, setTempArtForm] = useState("");
   const [viewArtist, setViewArtist] = useState<Artist | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const navigate = useNavigate();
 
   const loadArtists = async () => {
     try {
+      setLoading(true);
       const res = await getAllArtistsApi();
       setArtists(res.data.data);
     } catch {
       toast.error("Failed to load artists");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -106,12 +111,15 @@ function ArtistsList() {
     try {
       const token = localStorage.getItem("token");
       if (!token) return toast.error("Unauthorized");
-
+      
+      setDeletingId(id)
       await deleteArtistApi(id);
       toast.success("Artist deleted");
       loadArtists();
     } catch {
       toast.error("Delete failed");
+    }finally{
+      setDeletingId(null)
     }
   };
 
@@ -344,208 +352,217 @@ function ArtistsList() {
         )}
       </div>
 
-      <table className="w-full text-sm border border-[#F1EEE7]">
-        <thead className="bg-white">
-          <tr>
-            {headers.map((h) => (
-              <th
-                key={h.key}
-                onClick={() => sortData(h.key)}
-                className="p-3 cursor-pointer text-left">
-                <div className="flex items-center gap-2 leading-none">
-                  {h.label}
-                  <SortIcon col={h.key} />
-                </div>
-              </th>
-            ))}
-            <th></th>
-          </tr>
-        </thead>
+      {loading && (
+        <div className="py-10 text-center text-gray-500 font-medium">
+          Loading artists...
+        </div>
+      )}
 
-        <tbody>
-          {filteredArtists.length === 0 && (
+      {!loading && (
+        <table className="w-full text-sm border border-[#F1EEE7]">
+          <thead className="bg-white">
             <tr>
-              <td colSpan={6} className="p-4 text-center text-gray-600">
-                No artists added
-              </td>
+              {headers.map((h) => (
+                <th
+                  key={h.key}
+                  onClick={() => sortData(h.key)}
+                  className="p-3 cursor-pointer text-left">
+                  <div className="flex items-center gap-2 leading-none">
+                    {h.label}
+                    <SortIcon col={h.key} />
+                  </div>
+                </th>
+              ))}
+              <th></th>
             </tr>
-          )}
+          </thead>
 
-          {filteredArtists.map((a) => (
-            <tr key={a._id} className="border-t">
-              <td className="p-3 text-gray-800">
-                <div className="flex items-center gap-3">
-                  {a.image ? (
-                    <img
-                      src={a.image}
-                      alt={a.name}
-                      className="w-10 h-10 rounded-full object-cover border"
-                    />
-                  ) : (
-                    <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-xs text-gray-500">
-                      N/A
+          <tbody>
+            {filteredArtists.length === 0 && (
+              <tr>
+                <td colSpan={6} className="p-4 text-center text-gray-600">
+                  No artists added
+                </td>
+              </tr>
+            )}
+
+            {filteredArtists.map((a) => (
+              <tr key={a._id} className="border-t">
+                <td className="p-3 text-gray-800">
+                  <div className="flex items-center gap-3">
+                    {a.image ? (
+                      <img
+                        src={a.image}
+                        alt={a.name}
+                        className="w-10 h-10 rounded-full object-cover border"
+                      />
+                    ) : (
+                      <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-xs text-gray-500">
+                        N/A
+                      </div>
+                    )}
+
+                    <span className="font-medium">{a.name}</span>
+                  </div>
+                </td>
+                <td className="p-3">{a.artForm}</td>
+                <td className="p-3">{a.city}</td>
+                <td className="p-3">{a.state}</td>
+                <td className="p-3">{a.country}</td>
+
+                <td className="p-3 text-right relative artist-menu">
+                  <button
+                    onClick={() =>
+                      setOpenMenu(openMenu === a._id ? null : a._id)
+                    }>
+                    <MoreVertical size={18} />
+                  </button>
+
+                  {openMenu === a._id && (
+                    <div className="absolute right-4 top-10 w-32 bg-white border rounded-lg shadow z-20">
+                      <button
+                        onClick={() => {
+                          setViewArtist(a);
+                          setOpenMenu(null);
+                        }}
+                        className="block w-full px-4 py-2 text-left hover:bg-gray-100">
+                        View
+                      </button>
+
+                      <button
+                        onClick={() => navigate("/artists/add", { state: a })}
+                        className="block w-full px-4 py-2 text-left hover:bg-gray-100">
+                        Update
+                      </button>
+
+                      <button
+                        onClick={() => handleDelete(a._id)}
+                        disabled={deletingId == a._id}
+                        className="block w-full px-4 py-2 text-left text-red-600 hover:bg-gray-100 disabled:opacity-50">
+                        {deletingId === a._id ? "Deleting..." : "Delete"}
+                      </button>
                     </div>
                   )}
 
-                  <span className="font-medium">{a.name}</span>
-                </div>
-              </td>
-              <td className="p-3">{a.artForm}</td>
-              <td className="p-3">{a.city}</td>
-              <td className="p-3">{a.state}</td>
-              <td className="p-3">{a.country}</td>
-
-              <td className="p-3 text-right relative artist-menu">
-                <button
-                  onClick={() =>
-                    setOpenMenu(openMenu === a._id ? null : a._id)
-                  }>
-                  <MoreVertical size={18} />
-                </button>
-
-                {openMenu === a._id && (
-                  <div className="absolute right-4 top-10 w-32 bg-white border rounded-lg shadow z-20">
-                    <button
-                      onClick={() => {
-                        setViewArtist(a);
-                        setOpenMenu(null);
-                      }}
-                      className="block w-full px-4 py-2 text-left hover:bg-gray-100">
-                      View
-                    </button>
-
-                    <button
-                      onClick={() => navigate("/artists/add", { state: a })}
-                      className="block w-full px-4 py-2 text-left hover:bg-gray-100">
-                      Update
-                    </button>
-
-                    <button
-                      onClick={() => handleDelete(a._id)}
-                      className="block w-full px-4 py-2 text-left text-red-600 hover:bg-gray-100">
-                      Delete
-                    </button>
-                  </div>
-                )}
-
-                {viewArtist && (
-                  <div className="fixed inset-0 soft-blur flex items-center justify-center z-50 px-4">
-                    <div className="bg-white w-full max-w-lg rounded-[2rem] overflow-hidden relative shadow-2xl">
-                      <button
-                        onClick={() => setViewArtist(null)}
-                        className="absolute top-4 right-4 z-20 bg-black backdrop-blur-md text-white rounded-full w-10 h-10 flex items-center justify-center transition-all shadow-lg">
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="h-6 w-6"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor">
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M6 18L18 6M6 6l12 12"
-                          />
-                        </svg>
-                      </button>
-
-                      <div className="relative w-full h-72">
-                        {viewArtist.image ? (
-                          <>
-                            <img
-                              src={viewArtist.image}
-                              alt={viewArtist.name}
-                              className="w-full h-full object-cover"
+                  {viewArtist && (
+                    <div className="fixed inset-0 soft-blur flex items-center justify-center z-50 px-4">
+                      <div className="bg-white w-full max-w-lg rounded-[2rem] overflow-hidden relative shadow-2xl">
+                        <button
+                          onClick={() => setViewArtist(null)}
+                          className="absolute top-4 right-4 z-20 bg-black backdrop-blur-md text-white rounded-full w-10 h-10 flex items-center justify-center transition-all shadow-lg">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-6 w-6"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M6 18L18 6M6 6l12 12"
                             />
-                            <div className="absolute inset-0 bg-gradient-to-t from-white via-transparent to-transparent" />
-                          </>
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center bg-gray-100 text-gray-400">
-                            <span>No Image Available</span>
-                          </div>
-                        )}
-                      </div>
+                          </svg>
+                        </button>
 
-                      <div className="px-8 pb-8 -mt-12 relative z-10">
-                        <div className="inline-flex items-center bg-[#83261D] text-white text-[10px] uppercase tracking-wider font-bold px-3 py-1 rounded-md mb-3 shadow-md">
-                          <span className="mr-1.5">🎨</span>{" "}
-                          {viewArtist.artForm || "Artist"}
-                        </div>
-
-                        <div className="mb-6">
-                          <h2 className="text-4xl font-black text-gray-900 leading-none">
-                            {viewArtist.name}
-                          </h2>
-                        </div>
-
-                        <div className="grid grid-cols-1 gap-6">
-                          <div className="space-y-2">
-                            <p className="flex items-center text-xs font-bold uppercase tracking-widest text-gray-400">
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                className="h-4 w-4 mr-1 text-[#83261D]"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor">
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                                />
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                                />
-                              </svg>
-                              Location
-                            </p>
-                            <div className="flex flex-wrap gap-2">
-                              <span className="bg-gray-100 text-gray-700 px-3 py-1.5 rounded-lg text-sm font-medium border border-gray-200">
-                                {viewArtist.city}, {viewArtist.state}
-                              </span>
-                              <span className="bg-gray-100 text-gray-700 px-3 py-1.5 rounded-lg text-sm font-medium border border-gray-200">
-                                {viewArtist.country}
-                              </span>
+                        <div className="relative w-full h-72">
+                          {viewArtist.image ? (
+                            <>
+                              <img
+                                src={viewArtist.image}
+                                alt={viewArtist.name}
+                                className="w-full h-full object-cover"
+                              />
+                              <div className="absolute inset-0 bg-gradient-to-t from-white via-transparent to-transparent" />
+                            </>
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center bg-gray-100 text-gray-400">
+                              <span>No Image Available</span>
                             </div>
+                          )}
+                        </div>
+
+                        <div className="px-8 pb-8 -mt-12 relative z-10">
+                          <div className="inline-flex items-center bg-[#83261D] text-white text-[10px] uppercase tracking-wider font-bold px-3 py-1 rounded-md mb-3 shadow-md">
+                            <span className="mr-1.5">🎨</span>{" "}
+                            {viewArtist.artForm || "Artist"}
                           </div>
 
-                          <div className="space-y-2">
-                            <p className="flex items-center text-xs font-bold uppercase tracking-widest text-gray-400">
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                className="h-4 w-4 mr-1 text-[#83261D]"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor">
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                                />
-                              </svg>
-                              About the Artist
-                            </p>
-                            <p className="text-gray-600 text-sm leading-relaxed italic bg-gray-50 p-4 rounded-2xl">
-                              "
-                              {viewArtist.bio ||
-                                "This artist hasn't shared their story yet."}
-                              "
-                            </p>
+                          <div className="mb-6">
+                            <h2 className="text-4xl font-black text-gray-900 leading-none">
+                              {viewArtist.name}
+                            </h2>
+                          </div>
+
+                          <div className="grid grid-cols-1 gap-6">
+                            <div className="space-y-2">
+                              <p className="flex items-center text-xs font-bold uppercase tracking-widest text-gray-400">
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  className="h-4 w-4 mr-1 text-[#83261D]"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                  stroke="currentColor">
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                                  />
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                                  />
+                                </svg>
+                                Location
+                              </p>
+                              <div className="flex flex-wrap gap-2">
+                                <span className="bg-gray-100 text-gray-700 px-3 py-1.5 rounded-lg text-sm font-medium border border-gray-200">
+                                  {viewArtist.city}, {viewArtist.state}
+                                </span>
+                                <span className="bg-gray-100 text-gray-700 px-3 py-1.5 rounded-lg text-sm font-medium border border-gray-200">
+                                  {viewArtist.country}
+                                </span>
+                              </div>
+                            </div>
+
+                            <div className="space-y-2">
+                              <p className="flex items-center text-xs font-bold uppercase tracking-widest text-gray-400">
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  className="h-4 w-4 mr-1 text-[#83261D]"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                  stroke="currentColor">
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                                  />
+                                </svg>
+                                About the Artist
+                              </p>
+                              <p className="text-gray-600 text-sm leading-relaxed italic bg-gray-50 p-4 rounded-2xl">
+                                "
+                                {viewArtist.bio ||
+                                  "This artist hasn't shared their story yet."}
+                                "
+                              </p>
+                            </div>
                           </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                )}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
     </div>
   );
 }
