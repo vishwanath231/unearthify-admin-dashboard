@@ -55,15 +55,20 @@ export default function ArtDetailList() {
     state: "",
     origin: "",
   });
+  const [loading, setLoading] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const navigate = useNavigate();
 
   async function load() {
     try {
+      setLoading(true);
       const res = await getAllArtDetailsApi();
       setDetails(res.data.data);
     } catch {
       toast.error("Failed to load data");
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -164,11 +169,14 @@ export default function ArtDetailList() {
 
   async function handleDelete(id: string) {
     try {
+      setDeletingId(id);
       await deleteArtDetailApi(id);
       toast.success("Deleted");
       load();
     } catch {
       toast.error("Delete failed");
+    } finally {
+      setDeletingId(null);
     }
   }
 
@@ -299,186 +307,194 @@ export default function ArtDetailList() {
 
       <hr className="my-3" />
 
-      {/* TABLE */}
-      <table className="w-full text-sm border border-[#F1EEE7]">
-        <thead>
-          <tr className="border-b bg-[#F8E7DC]">
-            <th
-              className="p-3 text-left cursor-pointer select-none"
-              onClick={() => {
-                setSortKey("origin");
-                setSortOrder(sortOrder === "asc" ? "desc" : "asc");
-              }}>
-              <div className="flex items-center gap-1">
-                <span>Origin</span>
-                <div className="flex flex-col leading-none">
-                  <TiArrowSortedUp
-                    size={14}
-                    className={
-                      sortKey === "origin" && sortOrder === "asc"
-                        ? "text-black"
-                        : "text-gray-300"
-                    }
-                  />
-                  <TiArrowSortedDown
-                    size={14}
-                    className={
-                      sortKey === "origin" && sortOrder === "desc"
-                        ? "text-black"
-                        : "text-gray-300"
-                    }
-                  />
-                </div>
-              </div>
-            </th>
+      {loading && (
+        <div className="py-10 text-center text-gray-500 font-medium">
+          Loading art details...
+        </div>
+      )}
 
-            {/* MATERIALS (NUMBER) */}
-            <th
-              className="p-3 text-left cursor-pointer select-none"
-              onClick={() => {
-                setSortKey("materials");
-                setSortOrder(sortOrder === "asc" ? "desc" : "asc");
-              }}>
-              <div className="flex items-center gap-1">
-                <span>Materials</span>
-                <div className="flex flex-col leading-none">
-                  <TiArrowSortedUp
-                    size={14}
-                    className={
-                      sortKey === "materials" && sortOrder === "asc"
-                        ? "text-black"
-                        : "text-gray-300"
-                    }
-                  />
-                  <TiArrowSortedDown
-                    size={14}
-                    className={
-                      sortKey === "materials" && sortOrder === "desc"
-                        ? "text-black"
-                        : "text-gray-300"
-                    }
-                  />
-                </div>
-              </div>
-            </th>
-
-            {/* FAMOUS ARTIST (A–Z) */}
-            <th
-              className="p-3 text-left cursor-pointer select-none"
-              onClick={() => {
-                setSortKey("artist");
-                setSortOrder(sortOrder === "asc" ? "desc" : "asc");
-              }}>
-              <div className="flex items-center gap-1">
-                <span>Famous Artist</span>
-                <div className="flex flex-col leading-none">
-                  <TiArrowSortedUp
-                    size={14}
-                    className={
-                      sortKey === "artist" && sortOrder === "asc"
-                        ? "text-black"
-                        : "text-gray-300"
-                    }
-                  />
-                  <TiArrowSortedDown
-                    size={14}
-                    className={
-                      sortKey === "artist" && sortOrder === "desc"
-                        ? "text-black"
-                        : "text-gray-300"
-                    }
-                  />
-                </div>
-              </div>
-            </th>
-
-            {/* REGION (A–Z) */}
-            <th
-              className="p-3 text-left cursor-pointer select-none"
-              onClick={() => {
-                setSortKey("region");
-                setSortOrder(sortOrder === "asc" ? "desc" : "asc");
-              }}>
-              <div className="flex items-center gap-1">
-                <span>Region</span>
-                <div className="flex flex-col leading-none">
-                  <TiArrowSortedUp
-                    size={14}
-                    className={
-                      sortKey === "region" && sortOrder === "asc"
-                        ? "text-black"
-                        : "text-gray-300"
-                    }
-                  />
-                  <TiArrowSortedDown
-                    size={14}
-                    className={
-                      sortKey === "region" && sortOrder === "desc"
-                        ? "text-black"
-                        : "text-gray-300"
-                    }
-                  />
-                </div>
-              </div>
-            </th>
-
-            <th className="p-3 text-left">Website</th>
-            <th className="p-3 text-right"></th>
-          </tr>
-        </thead>
-
-        <tbody>
-          {filteredDetails.map((d) => (
-            <tr key={d._id} className="border-t">
-              <td className="p-3">{d.origin}</td>
-              <td className="p-3">{d.materials}</td>
-              <td className="p-3">{d.famousArtist}</td>
-              <td className="p-3">{d.region}</td>
-              <td className="p-3">{d.websiteLink}</td>
-
-              <td className="p-3 text-right relative action-menu">
-                <button
-                  onClick={() =>
-                    setOpenMenu(openMenu === d._id ? null : d._id)
-                  }>
-                  <MoreVertical size={18} />
-                </button>
-
-                {openMenu === d._id && (
-                  <div className="absolute right-2 top-9 w-32 bg-white border rounded-lg shadow z-20">
-                    <button
-                      onClick={() => setViewItem(d)}
-                      className="block w-full px-4 py-2 text-left hover:bg-gray-100">
-                      View
-                    </button>
-
-                    <button
-                      onClick={() => handleEdit(d)}
-                      className="block w-full px-4 py-2 text-left hover:bg-gray-100">
-                      Update
-                    </button>
-
-                    <button
-                      onClick={() => handleDelete(d._id)}
-                      className="block w-full px-4 py-2 text-left text-red-600 hover:bg-gray-100">
-                      Delete
-                    </button>
+      {!loading && (
+        <table className="w-full text-sm border border-[#F1EEE7]">
+          <thead>
+            <tr className="border-b">
+              <th
+                className="p-3 text-left cursor-pointer select-none"
+                onClick={() => {
+                  setSortKey("origin");
+                  setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+                }}>
+                <div className="flex items-center gap-1">
+                  <span>Origin</span>
+                  <div className="flex flex-col leading-none">
+                    <TiArrowSortedUp
+                      size={14}
+                      className={
+                        sortKey === "origin" && sortOrder === "asc"
+                          ? "text-black"
+                          : "text-gray-300"
+                      }
+                    />
+                    <TiArrowSortedDown
+                      size={14}
+                      className={
+                        sortKey === "origin" && sortOrder === "desc"
+                          ? "text-black"
+                          : "text-gray-300"
+                      }
+                    />
                   </div>
-                )}
-              </td>
+                </div>
+              </th>
+
+              {/* MATERIALS (NUMBER) */}
+              <th
+                className="p-3 text-left cursor-pointer select-none"
+                onClick={() => {
+                  setSortKey("materials");
+                  setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+                }}>
+                <div className="flex items-center gap-1">
+                  <span>Materials</span>
+                  <div className="flex flex-col leading-none">
+                    <TiArrowSortedUp
+                      size={14}
+                      className={
+                        sortKey === "materials" && sortOrder === "asc"
+                          ? "text-black"
+                          : "text-gray-300"
+                      }
+                    />
+                    <TiArrowSortedDown
+                      size={14}
+                      className={
+                        sortKey === "materials" && sortOrder === "desc"
+                          ? "text-black"
+                          : "text-gray-300"
+                      }
+                    />
+                  </div>
+                </div>
+              </th>
+
+              {/* FAMOUS ARTIST (A–Z) */}
+              <th
+                className="p-3 text-left cursor-pointer select-none"
+                onClick={() => {
+                  setSortKey("artist");
+                  setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+                }}>
+                <div className="flex items-center gap-1">
+                  <span>Famous Artist</span>
+                  <div className="flex flex-col leading-none">
+                    <TiArrowSortedUp
+                      size={14}
+                      className={
+                        sortKey === "artist" && sortOrder === "asc"
+                          ? "text-black"
+                          : "text-gray-300"
+                      }
+                    />
+                    <TiArrowSortedDown
+                      size={14}
+                      className={
+                        sortKey === "artist" && sortOrder === "desc"
+                          ? "text-black"
+                          : "text-gray-300"
+                      }
+                    />
+                  </div>
+                </div>
+              </th>
+
+              {/* REGION (A–Z) */}
+              <th
+                className="p-3 text-left cursor-pointer select-none"
+                onClick={() => {
+                  setSortKey("region");
+                  setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+                }}>
+                <div className="flex items-center gap-1">
+                  <span>Region</span>
+                  <div className="flex flex-col leading-none">
+                    <TiArrowSortedUp
+                      size={14}
+                      className={
+                        sortKey === "region" && sortOrder === "asc"
+                          ? "text-black"
+                          : "text-gray-300"
+                      }
+                    />
+                    <TiArrowSortedDown
+                      size={14}
+                      className={
+                        sortKey === "region" && sortOrder === "desc"
+                          ? "text-black"
+                          : "text-gray-300"
+                      }
+                    />
+                  </div>
+                </div>
+              </th>
+
+              <th className="p-3 text-left">Website</th>
+              <th className="p-3 text-right"></th>
             </tr>
-          ))}
-          {filteredDetails.length === 0 && (
-            <tr>
-              <td
-                colSpan={6}
-                className="p-6 text-center text-gray-400 font-medium">
-                No Details Added
-              </td>
-            </tr>
-          )}
-        </tbody>
-      </table>
+          </thead>
+
+          <tbody>
+            {filteredDetails.map((d) => (
+              <tr key={d._id} className="border-t">
+                <td className="p-3">{d.origin}</td>
+                <td className="p-3">{d.materials}</td>
+                <td className="p-3">{d.famousArtist}</td>
+                <td className="p-3">{d.region}</td>
+                <td className="p-3">{d.websiteLink}</td>
+
+                <td className="p-3 text-right relative action-menu">
+                  <button
+                    onClick={() =>
+                      setOpenMenu(openMenu === d._id ? null : d._id)
+                    }>
+                    <MoreVertical size={18} />
+                  </button>
+
+                  {openMenu === d._id && (
+                    <div className="absolute right-2 top-9 w-32 bg-white border rounded-lg shadow z-20">
+                      <button
+                        onClick={() => setViewItem(d)}
+                        className="block w-full px-4 py-2 text-left hover:bg-gray-100">
+                        View
+                      </button>
+
+                      <button
+                        onClick={() => handleEdit(d)}
+                        className="block w-full px-4 py-2 text-left hover:bg-gray-100">
+                        Update
+                      </button>
+
+                      <button
+                        onClick={() => handleDelete(d._id)}
+                        disabled={deletingId === d._id}
+                        className="block w-full px-4 py-2 text-left text-red-600 hover:bg-gray-100 disabled:opacity-50">
+                        {deletingId === d._id ? "Deleting..." : "Delete"}
+                      </button>
+                    </div>
+                  )}
+                </td>
+              </tr>
+            ))}
+            {filteredDetails.length === 0 && (
+              <tr>
+                <td
+                  colSpan={6}
+                  className="p-6 text-center text-gray-400 font-medium">
+                  No Details Added
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      )}
 
       {viewItem && (
         <div className="fixed inset-0 soft-blur flex items-center justify-center z-50 px-4">

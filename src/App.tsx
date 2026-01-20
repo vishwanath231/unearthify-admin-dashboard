@@ -16,7 +16,6 @@ import AddArtDetails from "./pages/ArtForms/ArtDetails/AddArtDetails";
 import EventsLists from "./pages/Events/EventsLists";
 import AddEvents from "./pages/Events/AddEvents";
 import ContibutionLists from "./pages/Contibutions/ContributionLists";
-import AddContibutions from "./pages/Contibutions/AddContributions";
 import { useEffect } from "react";
 import { autoLogout, startIdleLogout } from "./pages/AuthPages/Auth";
 
@@ -58,9 +57,7 @@ export default function App() {
             <Route path="/events/add" element={<AddEvents />} />
 
             {/* Contributes */}
-
             <Route path="/contributions" element={<ContibutionLists />} />
-            <Route path="/contribution/add" element={<AddContibutions />} />
  
           </Route>
 

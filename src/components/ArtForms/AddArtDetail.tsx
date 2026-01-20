@@ -37,18 +37,24 @@ export default function AddArtDetail() {
     website: "",
   });
 
+  const [loadingCategories, setLoadingCategories] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const location = useLocation();
-const editingItem = location.state as any;
-const isEdit = Boolean(editingItem);
+  const editingItem = location.state as any;
+  const isEdit = Boolean(editingItem);
 
   /* ===== LOAD CATEGORIES ===== */
   useEffect(() => {
     async function loadCategories() {
       try {
+        setLoadingCategories(true);
         const res = await api.get("/categories");
         setCategories(res.data.data);
       } catch {
         toast.error("Failed to load categories");
+      } finally {
+        setLoadingCategories(false);
       }
     }
 
@@ -67,108 +73,112 @@ const isEdit = Boolean(editingItem);
     setForm({ ...form, [e.target.name]: e.target.value });
   }
 
-
   // Edit
   useEffect(() => {
-  if (isEdit) {
-    setForm({
-      categoryId: editingItem.category._id,
-      artTypeId: editingItem.artType._id,
-      language: editingItem.language || "",
-      state: editingItem.state || "",
-      materials: editingItem.materials || "",
-      region: editingItem.region || "",
-      famousArtist: editingItem.famousArtist || "",
-      performers: editingItem.contemporaryPerformers || "",
-      typicalLength: editingItem.typicalLength || "",
-      origin: editingItem.origin || "",
-      website: editingItem.websiteLink || "",
-    });
+    if (isEdit) {
+      setForm({
+        categoryId: editingItem.category._id,
+        artTypeId: editingItem.artType._id,
+        language: editingItem.language || "",
+        state: editingItem.state || "",
+        materials: editingItem.materials || "",
+        region: editingItem.region || "",
+        famousArtist: editingItem.famousArtist || "",
+        performers: editingItem.contemporaryPerformers || "",
+        typicalLength: editingItem.typicalLength || "",
+        origin: editingItem.origin || "",
+        website: editingItem.websiteLink || "",
+      });
 
-    const selected = categories.find(c => c._id === editingItem.category._id);
-    setArtForms(selected ? selected.artTypes : []);
-  }
-}, [isEdit, editingItem, categories]);
+      const selected = categories.find(
+        (c) => c._id === editingItem.category._id,
+      );
+      setArtForms(selected ? selected.artTypes : []);
+    }
+  }, [isEdit, editingItem, categories]);
 
   /* ===== SUBMIT ===== */
   async function handleSubmit() {
-  try {
-    const payload = {
-      categoryId: form.categoryId,
-      artTypeId: form.artTypeId,
-      language: form.language,
-      state: form.state,
-      materials: form.materials,
-      region: form.region,
-      famousArtist: form.famousArtist,
-      contemporaryPerformers: form.performers,
-      typicalLength: form.typicalLength,
-      origin: form.origin,
-      websiteLink: form.website,
-    };
+    if (isSubmitting) return;
+    try {
+      setIsSubmitting(true);
 
-    if (isEdit) {
-      await updateArtDetailApi(editingItem._id, payload);
-      toast.success("Updated successfully");
-    } else {
-      await createArtDetailApi(payload);
-      toast.success("Created successfully");
+      const payload = {
+        categoryId: form.categoryId,
+        artTypeId: form.artTypeId,
+        language: form.language,
+        state: form.state,
+        materials: form.materials,
+        region: form.region,
+        famousArtist: form.famousArtist,
+        contemporaryPerformers: form.performers,
+        typicalLength: form.typicalLength,
+        origin: form.origin,
+        websiteLink: form.website,
+      };
+
+      if (isEdit) {
+        await updateArtDetailApi(editingItem._id, payload);
+        toast.success("Updated successfully");
+      } else {
+        await createArtDetailApi(payload);
+        toast.success("Created successfully");
+      }
+
+      navigate("/art-details");
+    } catch {
+      toast.error(isEdit ? "Update failed" : "Create failed");
+    } finally {
+      setIsSubmitting(false);
     }
-
-    navigate("/art-details");
-
-  } catch {
-    toast.error(isEdit ? "Update failed" : "Create failed");
   }
-}
 
   return (
     <div className="bg-white p-6 rounded-lg shadow space-y-8">
       {/* Basic */}
       <div className="space-y-4">
-  <h2 className="font-semibold text-gray-700">Basic Information</h2>
+        <h2 className="font-semibold text-gray-700">Basic Information</h2>
 
-  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* CATEGORY */}
+          <div className="flex flex-col gap-1">
+            <label className="text-sm font-medium">Category</label>
+            {loadingCategories && (
+              <p className="text-sm text-gray-400">Loading categories...</p>
+            )}
 
-    {/* CATEGORY */}
-    <div className="flex flex-col gap-1">
-      <label className="text-sm font-medium">Category</label>
-      <select
-        value={form.categoryId}
-        onChange={ (e) => handleCategoryChange(e.target.value)}
-        className="input mt-1"
-      >
-        <option value="">Select category</option>
-        {categories.map((c) => (
-          <option key={c._id} value={c._id}>
-            {c.name}
-          </option>
-        ))}
-      </select>
-    </div>
+            <select
+              value={form.categoryId}
+              disabled={loadingCategories}
+              onChange={(e) => handleCategoryChange(e.target.value)}
+              className="input mt-1">
+              <option value="">Select category</option>
+              {categories.map((c) => (
+                <option key={c._id} value={c._id}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
+          </div>
 
-    {/* ART TYPE */}
-    <div className="flex flex-col gap-1">
-      <label className="text-sm font-medium">Art Type</label>
-      <select
-        value={form.artTypeId}
-        onChange={(e) =>
-          setForm({ ...form, artTypeId: e.target.value })
-        }
-        className="input mt-1"
-        disabled={!form.categoryId}
-      >
-        <option value="">Select art type</option>
-        {artForms.map((a) => (
-          <option key={a._id} value={a._id}>
-            {a.name}
-          </option>
-        ))}
-      </select>
-    </div>
-
-  </div>
-</div>
+          {/* ART TYPE */}
+          <div className="flex flex-col gap-1">
+            <label className="text-sm font-medium">Art Type</label>
+            <select
+              value={form.artTypeId}
+              onChange={(e) => setForm({ ...form, artTypeId: e.target.value })}
+              className="input mt-1"
+              disabled={!form.categoryId}>
+              <option value="">Select art type</option>
+              {artForms.map((a) => (
+                <option key={a._id} value={a._id}>
+                  {a.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+      </div>
       {/* Classification */}
       <div className="space-y-3">
         <h2 className="font-semibold text-gray-700">Classification</h2>
@@ -290,7 +300,7 @@ const isEdit = Boolean(editingItem);
       </div>
 
       {/* Action */}
-       <div className="flex justify-end gap-3">
+      <div className="flex justify-end gap-3">
         <button
           onClick={() => navigate("/art-details")}
           className="px-5 py-2 bg-[#83261D] text-white border rounded-lg">
@@ -299,8 +309,17 @@ const isEdit = Boolean(editingItem);
 
         <button
           onClick={handleSubmit}
-          className="px-5 py-2 bg-[#83261D] text-white rounded-lg">
-          {isEdit  ? "Update" : "Save"}
+          disabled={isSubmitting}
+          className={`px-5 py-2 rounded-lg text-white ${
+            isSubmitting ? "bg-gray-400 cursor-not-allowed" : "bg-[#83261D]"
+          }`}>
+          {isSubmitting
+            ? isEdit
+              ? "Updating..."
+              : "Saving..."
+            : isEdit
+              ? "Update"
+              : "Save"}
         </button>
       </div>
     </div>
