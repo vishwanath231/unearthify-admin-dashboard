@@ -43,17 +43,23 @@ export default function EventList() {
   const [viewEvent, setViewEvent] = useState<Event | null>(null);
   const [categoryFilter, setCategoryFilter] = useState("");
   const [tempCategory, setTempCategory] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   /* ---------- LOAD ---------- */
 
   const loadEvents = async () => {
     try {
+      setLoading(true);
       const res = await getAllEventsApi();
       setEvents(res.data.data);
     } catch {
       toast.error("Failed to load events");
+    } finally {
+      setLoading(false);
     }
   };
+
   const loadEventCategories = async () => {
     try {
       const res = await fetch(
@@ -128,11 +134,14 @@ export default function EventList() {
   /* ---------- DELETE ---------- */
   const handleDelete = async (id: string) => {
     try {
+      setDeletingId(id);
       await deleteEventApi(id);
-      toast.success("Event Deleted");
+      toast.success("Event deleted");
       loadEvents();
     } catch {
       toast.error("Delete failed");
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -345,7 +354,13 @@ export default function EventList() {
         )}
       </div>
 
-      {/* TABLE */}
+      {loading && (
+  <div className="py-10 text-center text-gray-500 font-medium">
+    Loading events...
+  </div>
+)}
+
+    {!loading && (
       <table className="w-full text-sm border border-[#F1EEE7]">
         <thead>
           <tr>
@@ -419,9 +434,10 @@ export default function EventList() {
                     </button>
 
                     <button
+                      disabled={deletingId === ev._id}
                       onClick={() => handleDelete(ev._id)}
-                      className="block w-full px-4 py-2 text-left text-red-600 hover:bg-gray-100">
-                      Delete
+                      className="block w-full px-4 py-2 text-left text-red-600 hover:bg-gray-100 disabled:opacity-50">
+                      {deletingId === ev._id ? "Deleting..." : "Delete"}
                     </button>
                   </div>
                 )}
@@ -560,6 +576,7 @@ export default function EventList() {
           ))}
         </tbody>
       </table>
+      )}
     </div>
   );
 }
