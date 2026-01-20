@@ -6,6 +6,7 @@ import {
   ChevronDownIcon,
   GridIcon,
   HorizontaLDots,
+  TableIcon
 } from "../icons";
 import { useSidebar } from "../context/SidebarContext";
 import { FaFlag, FaUser } from "react-icons/fa";
@@ -51,15 +52,12 @@ const navItems: NavItem[] = [
       { name: "Add Event", path: "/events/add", pro: false },
     ],
   },
-  // {
-  //   name: "Contribute",
-  //   icon: <TableIcon />,
-  //   subItems: [
-  //     { name: "Contribution List", path: "/contributions", pro: false },
-  //     { name: "Add Contribution", path: "/contribution/add", pro: false }
-  //   ],
-  // },
-];
+  {
+    name: "Contribute",
+    icon: <TableIcon />,
+    path: "/contributions",
+  }
+]
 
 const othersItems: NavItem[] = [];
 

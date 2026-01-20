@@ -36,8 +36,11 @@ export default function ContributionList() {
 
   const [tempType, setTempType] = useState("");
   const [page, setPage] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
   const [viewContribution, setViewContribution] = useState<Contribution | null>(
-    null
+    null,
   );
 
   const ITEMS_PER_PAGE = 10;
@@ -48,10 +51,13 @@ export default function ContributionList() {
 
   const loadContributions = async () => {
     try {
+      setLoading(true);
       const res = await getAllContributionsApi();
       setData(res.data.data);
     } catch {
       toast.error("Failed to load contributions");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -109,11 +115,14 @@ export default function ContributionList() {
   /* ---------- DELETE ---------- */
   const handleDelete = async (id: string) => {
     try {
+      setDeletingId(id);
       await deleteContributionApi(id);
       toast.success("Deleted");
       loadContributions();
     } catch {
       toast.error("Delete failed");
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -203,7 +212,7 @@ export default function ContributionList() {
           />
 
           {typeFilter && (
-            <span className="flex items-center gap-2 bg-blue-50 text-[#83261D] px-3 py-1 rounded-full text-xs">
+            <span className="flex items-center gap-2 bg-[#F8E7DC] text-[#83261D] px-3 py-1 rounded-full text-xs">
               Type: {typeFilter}
               <button onClick={removeTypeFilter} className="font-bold">
                 ×
@@ -266,157 +275,156 @@ export default function ContributionList() {
         )}
       </div>
 
-      {/* Table */}
-      <table className="w-full text-sm border text-gray-500">
-        <thead>
-          <tr>
-            {headers.map((h) => (
-              <th
-                key={h.key}
-                onClick={() => sortData(h.key)}
-                className="p-3 cursor-pointer text-left">
-                <div className="flex items-center gap-2">
-                  {h.label} <SortIcon col={h.key} />
-                </div>
-              </th>
-            ))}
-            <th></th>
-          </tr>
-        </thead>
+      {loading && (
+        <div className="py-10 text-center text-gray-500 font-medium">
+          Loading contributions...
+        </div>
+      )}
 
-        <tbody>
-          {filteredData.length === 0 && (
+      {!loading && (
+        <table className="w-full text-sm border text-gray-500">
+          <thead>
             <tr>
-              <td colSpan={4} className="p-4 text-center text-gray-500">
-                No contributions found
-              </td>
-            </tr>
-          )}
-
-          {paginated.map((c) => (
-            <tr key={c._id} className="border-t">
-              <td className="p-3 font-medium text-gray-800">{c.name}</td>
-              <td className="p-3">{c.mobileNumber}</td>
-              <td className="p-3">{c.contributionType}</td>
-
-              <td className="p-3 text-right relative contribution-menu">
-                <button
-                  onClick={() =>
-                    setOpenMenu(openMenu === c._id ? null : c._id)
-                  }>
-                  <MoreVertical size={18} />
-                </button>
-
-                {openMenu === c._id && (
-                  <div className="absolute right-4 top-10 w-32 bg-white border rounded-lg shadow z-20">
-                    <button
-                      onClick={() => {
-                        setViewContribution(c);
-                        setOpenMenu(null);
-                      }}
-                      className="block w-full px-4 py-2 text-left hover:bg-gray-100">
-                      View
-                    </button>
-
-                    <button
-                      onClick={() =>
-                        navigate("/contribution/add", { state: c })
-                      }
-                      className="block w-full px-4 py-2 text-left hover:bg-gray-100">
-                      Update
-                    </button>
-
-                    <button
-                      onClick={() => handleDelete(c._id)}
-                      className="block w-full px-4 py-2 text-left text-red-600 hover:bg-gray-100">
-                      Delete
-                    </button>
+              {headers.map((h) => (
+                <th
+                  key={h.key}
+                  onClick={() => sortData(h.key)}
+                  className="p-3 cursor-pointer text-left">
+                  <div className="flex items-center gap-2">
+                    {h.label} <SortIcon col={h.key} />
                   </div>
-                )}
+                </th>
+              ))}
+              <th></th>
+            </tr>
+          </thead>
 
-                {viewContribution && (
-                  <div className="fixed inset-0 soft-blur flex items-center justify-center z-50 px-4">
-                    <div className="bg-white w-full max-w-md rounded-[32px] overflow-hidden relative shadow-[0_20px_50px_rgba(0,0,0,0.3)] border border-gray-100">
+          <tbody>
+            {filteredData.length === 0 && (
+              <tr>
+                <td colSpan={4} className="p-4 text-center text-gray-500">
+                  No contributions found
+                </td>
+              </tr>
+            )}
+
+            {paginated.map((c) => (
+              <tr key={c._id} className="border-t">
+                <td className="p-3 font-medium text-gray-800">{c.name}</td>
+                <td className="p-3">{c.mobileNumber}</td>
+                <td className="p-3">{c.contributionType}</td>
+
+                <td className="p-3 text-right relative contribution-menu">
+                  <button
+                    onClick={() =>
+                      setOpenMenu(openMenu === c._id ? null : c._id)
+                    }>
+                    <MoreVertical size={18} />
+                  </button>
+
+                  {openMenu === c._id && (
+                    <div className="absolute right-4 top-10 w-32 bg-white border rounded-lg shadow z-20">
                       <button
-                        onClick={() => setViewContribution(null)}
-                        className="absolute top-5 right-5 z-20 text-gray-400 hover:text-gray-900 transition-colors">
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="h-7 w-7"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor">
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M6 18L18 6M6 6l12 12"
-                          />
-                        </svg>
+                        onClick={() => {
+                          setViewContribution(c);
+                          setOpenMenu(null);
+                        }}
+                        className="block w-full px-4 py-2 text-left hover:bg-gray-100">
+                        View
                       </button>
 
-                      <div className="relative bg-[#83261D] pt-12 pb-16 px-8 overflow-hidden">
-                        <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full" />
+                      <button
+                        onClick={() =>
+                          navigate("/contribution/add", { state: c })
+                        }
+                        className="block w-full px-4 py-2 text-left hover:bg-gray-100">
+                        Update
+                      </button>
 
-                        <div className="relative z-10 flex flex-col items-center text-center">
-                          <div className="bg-white/20 p-3 rounded-2xl backdrop-blur-sm mb-4"></div>
-                          <h2 className="text-2xl font-bold text-white tracking-tight">
-                            {viewContribution.name}
-                          </h2>
-                          <span className="mt-1 text-white/70 text-xs font-bold uppercase tracking-widest bg-white/10 px-3 py-1 rounded-full">
-                            {viewContribution.contributionType}
-                          </span>
-                        </div>
-                      </div>
+                      <button
+                        onClick={() => handleDelete(c._id)}
+                        disabled={deletingId === c._id}
+                        className="block w-full px-4 py-2 text-left text-red-600 hover:bg-gray-100 disabled:opacity-50">
+                        {deletingId === c._id ? "Deleting..." : "Delete"}
+                      </button>
+                    </div>
+                  )}
 
-                      <div className="px-8 pb-8 -mt-8 relative z-10">
-                        <div className="bg-white rounded-[24px] shadow-xl border border-gray-50 p-6 space-y-6">
-                          <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-1">
-                              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
-                                Contact No.
-                              </p>
-                              <p className="text-gray-900 font-semibold flex items-center gap-2">
-                                <span className="text-[#83261D]">📞</span>{" "}
-                                {viewContribution.mobileNumber}
-                              </p>
-                            </div>
-                            <div className="space-y-1">
-                              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
-                                Status
-                              </p>
-                              <p className="text-emerald-600 font-bold flex items-center gap-2">
-                                <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />{" "}
-                                Verified
-                              </p>
-                            </div>
+                  {viewContribution && (
+                    <div className="fixed inset-0 soft-blur flex items-center justify-center z-50 px-4">
+                      <div className="bg-white w-full max-w-md rounded-[32px] overflow-hidden relative shadow-[0_20px_50px_rgba(0,0,0,0.3)] border border-gray-100">
+                        <button
+                          onClick={() => setViewContribution(null)}
+                          className="absolute top-5 right-5 z-20 text-gray-400 hover:text-gray-900 transition-colors">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-7 w-7"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M6 18L18 6M6 6l12 12"
+                            />
+                          </svg>
+                        </button>
+
+                        <div className="relative bg-[#83261D] pt-12 pb-16 px-8 overflow-hidden">
+                          <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full" />
+
+                          <div className="relative z-10 flex flex-col items-center text-center">
+                            <div className="bg-white/20 p-3 rounded-2xl backdrop-blur-sm mb-4"></div>
+                            <h2 className="text-2xl font-bold text-white tracking-tight">
+                              {viewContribution.name}
+                            </h2>
+                            <span className="mt-1 text-white/70 text-xs font-bold uppercase tracking-widest bg-white/10 px-3 py-1 rounded-full">
+                              {viewContribution.contributionType}
+                            </span>
                           </div>
+                        </div>
 
-                          <hr className="border-gray-100" />
+                        <div className="px-8 pb-8 -mt-8 relative z-10">
+                          <div className="bg-white rounded-[24px] shadow-xl border border-gray-50 p-6 space-y-6">
+                            <div className="flex justify-center">
+                              <div className="space-y-1">
+                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                                  Contact No.
+                                </p>
+                                <p className="text-gray-900 font-semibold flex items-center gap-2">
+                                  <span className="text-[#83261D]">📞</span>{" "}
+                                  {viewContribution.mobileNumber}
+                                </p>
+                              </div>
+                            </div>
 
-                          <div className="space-y-2">
-                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
-                              Message/Notes
-                            </p>
-                            <div className="bg-gray-50/80 p-4 rounded-xl">
-                              <p className="text-gray-600 text-[14px] leading-relaxed italic">
-                                "
-                                {viewContribution.description ||
-                                  "No specific notes provided for this contribution."}
-                                "
+                            <hr className="border-gray-100" />
+
+                            <div className="space-y-2">
+                              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                                Message/Notes
                               </p>
+                              <div className="bg-gray-50/80 p-4 rounded-xl">
+                                <p className="text-gray-600 text-[14px] leading-relaxed italic">
+                                  "
+                                  {viewContribution.description ||
+                                    "No specific notes provided for this contribution."}
+                                  "
+                                </p>
+                              </div>
                             </div>
                           </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                )}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
 
       {/* PAGINATION */}
       {totalPages > 1 && (
