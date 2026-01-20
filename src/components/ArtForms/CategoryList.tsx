@@ -40,13 +40,27 @@ export default function CategoryList() {
   const [filterOpen, setFilterOpen] = useState(false);
   const [tempCategory, setTempCategory] = useState("");
   const [appliedCategory, setAppliedCategory] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [deletingCategoryId, setDeletingCategoryId] = useState<string | null>(
+    null,
+  );
+  const [deletingArtTypeId, setDeletingArtTypeId] = useState<string | null>(
+    null,
+  );
 
   const navigate = useNavigate();
 
   /* ---------- LOAD ---------- */
   async function load() {
-    const res = await getAllCategoriesApi();
-    setCategories(res.data.data);
+    try {
+      setLoading(true);
+      const res = await getAllCategoriesApi();
+      setCategories(res.data.data);
+    } catch {
+      toast.error("Failed to load categories");
+    } finally {
+      setLoading(false);
+    }
   }
 
   useEffect(() => {
@@ -118,24 +132,30 @@ export default function CategoryList() {
 
   async function handleDelete(id: string) {
     try {
+      setDeletingCategoryId(id);
       await deleteCategoryApi(id);
       toast.success("Category deleted");
-      load();
+      await load();
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Delete failed");
+    } finally {
+      setDeletingCategoryId(null);
     }
   }
 
   async function handleDeleteType() {
     try {
+      setDeletingArtTypeId(viewArt!._id as string);
       await deleteArtTypeApi(viewArt!.category._id, viewArt!._id as string);
       toast.success("Art type deleted");
       setViewArt(null);
-      load();
+      await load();
     } catch {
       toast.error("Delete failed");
+    } finally {
+      setDeletingArtTypeId(null);
     }
-  };
+  }
 
   return (
     <div className="p-6 bg-white rounded-xl shadow">
@@ -230,146 +250,158 @@ export default function CategoryList() {
 
       <hr className="my-3" />
 
-      {/* TABLE */}
-      <table className="w-full text-sm border border-[#F1EEE7]">
-        <thead className="bg-white">
-          <tr>
-            <th className="p-3 text-left">Image</th>
+      {loading && (
+        <div className="py-12 text-center text-gray-500 font-medium">
+          Loading categories...
+        </div>
+      )}
 
-            <th
-              className="p-3 text-left cursor-pointer select-none"
-              onClick={() => {
-                setSortKey("name");
-                setSortOrder(sortOrder === "asc" ? "desc" : "asc");
-              }}>
-              <div className="flex items-center gap-1">
-                <span>Name</span>
-                <div className="flex flex-col leading-none">
-                  <TiArrowSortedUp
-                    size={14}
-                    className={
-                      sortKey === "name" && sortOrder === "asc"
-                        ? "text-black"
-                        : "text-gray-300"
-                    }
-                  />
-                  <TiArrowSortedDown
-                    size={14}
-                    className={
-                      sortKey === "name" && sortOrder === "desc"
-                        ? "text-black"
-                        : "text-gray-300"
-                    }
-                  />
+      {!loading && (
+        <table className="w-full text-sm border border-[#F1EEE7]">
+          <thead className="bg-white">
+            <tr>
+              <th className="p-3 text-left">Image</th>
+
+              <th
+                className="p-3 text-left cursor-pointer select-none"
+                onClick={() => {
+                  setSortKey("name");
+                  setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+                }}>
+                <div className="flex items-center gap-1">
+                  <span>Name</span>
+                  <div className="flex flex-col leading-none">
+                    <TiArrowSortedUp
+                      size={14}
+                      className={
+                        sortKey === "name" && sortOrder === "asc"
+                          ? "text-black"
+                          : "text-gray-300"
+                      }
+                    />
+                    <TiArrowSortedDown
+                      size={14}
+                      className={
+                        sortKey === "name" && sortOrder === "desc"
+                          ? "text-black"
+                          : "text-gray-300"
+                      }
+                    />
+                  </div>
                 </div>
-              </div>
-            </th>
+              </th>
 
-            <th className="p-3 text-left">Description</th>
+              <th className="p-3 text-left">Description</th>
 
-            <th
-              className="p-3 text-left cursor-pointer select-none"
-              onClick={() => {
-                setSortKey("count");
-                setSortOrder(sortOrder === "asc" ? "desc" : "asc");
-              }}>
-              <div className="flex items-center gap-1">
-                <span>Art Types</span>
-                <div className="flex flex-col leading-none">
-                  <TiArrowSortedUp
-                    size={14}
-                    className={
-                      sortKey === "count" && sortOrder === "asc"
-                        ? "text-black"
-                        : "text-gray-300"
-                    }
-                  />
-                  <TiArrowSortedDown
-                    size={14}
-                    className={
-                      sortKey === "count" && sortOrder === "desc"
-                        ? "text-black"
-                        : "text-gray-300"
-                    }
-                  />
+              <th
+                className="p-3 text-left cursor-pointer select-none"
+                onClick={() => {
+                  setSortKey("count");
+                  setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+                }}>
+                <div className="flex items-center gap-1">
+                  <span>Art Types</span>
+                  <div className="flex flex-col leading-none">
+                    <TiArrowSortedUp
+                      size={14}
+                      className={
+                        sortKey === "count" && sortOrder === "asc"
+                          ? "text-black"
+                          : "text-gray-300"
+                      }
+                    />
+                    <TiArrowSortedDown
+                      size={14}
+                      className={
+                        sortKey === "count" && sortOrder === "desc"
+                          ? "text-black"
+                          : "text-gray-300"
+                      }
+                    />
+                  </div>
                 </div>
-              </div>
-            </th>
+              </th>
 
-            <th className="p-3 text-right"></th>
-          </tr>
-        </thead>
+              <th className="p-3 text-right"></th>
+            </tr>
+          </thead>
 
-        <tbody>
-          {filteredCategories.map((cat) => {
-            return (
-              <tr key={cat._id} className="border-t align-top">
-                <td className="p-3">
-                  <img
-                    src= {cat.image}
-                    className="w-12 h-12 rounded object-cover border"
-                  />
-                </td>
+          <tbody>
+            {filteredCategories.map((cat) => {
+              return (
+                <tr key={cat._id} className="border-t align-top">
+                  <td className="p-3">
+                    <img
+                      src={cat.image}
+                      className="w-12 h-12 rounded object-cover border"
+                    />
+                  </td>
 
-                <td className="p-3 font-medium">{cat.name}</td>
-                <td className="p-3 text-gray-600">{cat.description}</td>
+                  <td className="p-3 font-medium">{cat.name}</td>
+                  <td className="p-3 text-gray-600">{cat.description}</td>
 
-                <td className="p-3 text-gray-700">
-                  {cat.artTypes.length > 0 ? (
-                    <div className="flex flex-wrap gap-2">
-                      {cat.artTypes.map((a) => (
-                        <span
-                          key={a._id}
-                          onClick={() => setViewArt({ ...a, category: cat })}
-                          className="px-2 py-1 bg-gray-100 rounded text-xs cursor-pointer hover:bg-gray-200">
-                          {a.name}
-                        </span>
-                      ))}
-                    </div>
-                  ) : (
-                    <span className="text-gray-400 text-xs">No art types</span>
-                  )}
-                </td>
+                  <td className="p-3 text-gray-700">
+                    {cat.artTypes.length > 0 ? (
+                      <div className="flex flex-wrap gap-2">
+                        {cat.artTypes.map((a) => (
+                          <span
+                            key={a._id}
+                            onClick={() => setViewArt({ ...a, category: cat })}
+                            className="px-2 py-1 bg-gray-100 rounded text-xs cursor-pointer hover:bg-gray-200">
+                            {a.name}
+                          </span>
+                        ))}
+                      </div>
+                    ) : (
+                      <span className="text-gray-400 text-xs">
+                        No art types
+                      </span>
+                    )}
+                  </td>
 
-                <td className="p-3 text-right relative cat-menu">
-                  <button
-                    onClick={() =>
-                      setOpenMenu(openMenu === cat._id ? null : cat._id)
-                    }>
-                    <MoreVertical size={18} />
-                  </button>
+                  <td className="p-3 text-right relative cat-menu">
+                    <button
+                      onClick={() =>
+                        setOpenMenu(openMenu === cat._id ? null : cat._id)
+                      }>
+                      <MoreVertical size={18} />
+                    </button>
 
-                  {openMenu === cat._id && (
-                    <div className="absolute right-3 top-9 w-28 bg-white border rounded-lg shadow z-20">
-                      <button
-                        onClick={() =>
-                          navigate("/categories/add", { state: cat })
-                        }
-                        className="block w-full px-4 py-2 text-left hover:bg-gray-100">
-                        Update
-                      </button>
+                    {openMenu === cat._id && (
+                      <div className="absolute right-3 top-9 w-28 bg-white border rounded-lg shadow z-20">
+                        <button
+                          onClick={() =>
+                            navigate("/categories/add", { state: cat })
+                          }
+                          className="block w-full px-4 py-2 text-left hover:bg-gray-100">
+                          Update
+                        </button>
 
-                      <button
-                        onClick={() => handleDelete(cat._id)}
-                        className="block w-full px-4 py-2 text-left text-red-600 hover:bg-gray-100">
-                        Delete
-                      </button>
-                    </div>
-                  )}
+                        <button
+                          disabled={deletingCategoryId === cat._id}
+                          onClick={() => handleDelete(cat._id)}
+                          className="block w-full px-4 py-2 text-left text-red-600 hover:bg-gray-100 disabled:opacity-50">
+                          {deletingCategoryId === cat._id
+                            ? "Deleting..."
+                            : "Delete"}
+                        </button>
+                      </div>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
+
+            {filteredCategories.length === 0 && (
+              <tr>
+                <td colSpan={5} className="p-4 text-center text-gray-400">
+                  No categories found
                 </td>
               </tr>
-            );
-          })}
-
-          {filteredCategories.length === 0 && (
-            <tr>
-              <td colSpan={5} className="p-4 text-center text-gray-400">
-                No categories found
-              </td>
-            </tr>
-          )}
-        </tbody>
-      </table>
+            )}
+          </tbody>
+        </table>
+      )}
 
       {viewArt && (
         <div className="fixed inset-0 soft-blur flex items-center justify-center z-50 px-4">
@@ -432,9 +464,10 @@ export default function CategoryList() {
                 Update
               </button>
               <button
+                disabled={deletingArtTypeId === viewArt._id}
                 onClick={() => handleDeleteType()}
-                className="px-4 py-2 border rounded-lg text-red-600">
-                Delete
+                className="px-4 py-2 border rounded-lg text-red-600 disabled:opacity-50">
+                {deletingArtTypeId === viewArt._id ? "Deleting..." : "Delete"}
               </button>
             </div>
           </div>

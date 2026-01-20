@@ -32,6 +32,7 @@ function AddArtists() {
   const [imageError, setImageError] = useState("");
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -66,12 +67,15 @@ function AddArtists() {
   }, [previewUrl]);
 
   const handleSubmit = async () => {
+    if (isSubmitting) return;
     if (!name || !artForm || !city || !stateName || !country || !bio) {
       toast.error("All fields are required");
       return;
     }
 
     try {
+      setIsSubmitting(true);
+
       const formData = new FormData();
       formData.append("name", name);
       formData.append("artForm", artForm);
@@ -96,7 +100,9 @@ function AddArtists() {
       navigate("/artists");
     } catch (err: any) {
       console.error("UPDATE ERROR ", err.response?.data || err.message);
-      toast.error(err.response?.data?.message || "Update failed");
+      toast.error(err.response?.data?.message || "Create failed");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -258,8 +264,15 @@ function AddArtists() {
 
         <button
           onClick={handleSubmit}
-          className="px-5 py-2 bg-[#83261D] text-white rounded-lg">
-          {editArtist ? "Update Artist" : "Add Artist"}
+          disabled={isSubmitting}
+          className={`px-5 py-2 rounded-lg text-white ${isSubmitting ? "bg-gray-400 cursor-not-allowed" : "bg-[#83261D]"}`}>
+          {isSubmitting
+            ? editArtist
+              ? "Updating..."
+              : "Adding..."
+            : editArtist
+              ? "Update Artist"
+              : "Add Artist"}
         </button>
       </div>
     </div>

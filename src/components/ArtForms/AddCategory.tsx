@@ -34,6 +34,7 @@ export default function AddCategory() {
   const [categoryImage, setCategoryImage] = useState<File | null>(null);
   const [categoryImageError, setCategoryImageError] = useState("");
   const categoryFileRef = useRef<HTMLInputElement | null>(null);
+  const [submitting, setSubmitting] = useState(false);
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -48,8 +49,15 @@ export default function AddCategory() {
 
   useEffect(() => {
     async function load() {
-      const res = await getAllCategoriesApi();
-      setCategories(res.data.data);
+      try {
+        setSubmitting(true);
+        const res = await getAllCategoriesApi();
+        setCategories(res.data.data);
+      } catch (err: any) {
+        toast.error(err.response?.data?.message || "Failed");
+      } finally {
+        setSubmitting(false);
+      }
     }
     load();
   }, []);
@@ -104,7 +112,7 @@ export default function AddCategory() {
     // NEW CATEGORY
     if (option.__isNew__) {
       const exists = categories.find(
-        (c) => c.name.toLowerCase() === option.label.toLowerCase()
+        (c) => c.name.toLowerCase() === option.label.toLowerCase(),
       );
 
       if (exists) {
@@ -156,7 +164,7 @@ export default function AddCategory() {
   /* ---------- ART TYPES ---------- */
   function updateArtType(id: string, key: keyof ArtType, value: any) {
     setArtTypes((prev) =>
-      prev.map((a) => (a.id === id ? { ...a, [key]: value } : a))
+      prev.map((a) => (a.id === id ? { ...a, [key]: value } : a)),
     );
   }
 
@@ -185,6 +193,7 @@ export default function AddCategory() {
 
   /* ---------- SUBMIT ---------- */
   async function handleSubmit() {
+    if (submitting) return;
     if (!selectedCategory) {
       toast.error("Select or create category");
       return;
@@ -214,6 +223,7 @@ export default function AddCategory() {
 
     if (isEditArtType) {
       try {
+        setSubmitting(true);
         const art = artTypes[0];
 
         const formData = new FormData();
@@ -232,46 +242,49 @@ export default function AddCategory() {
       } catch (err) {
         console.error(err);
         toast.error("Update failed");
-        return;
+      } finally {
+        setSubmitting(false);
       }
     }
 
     try {
-  const formData = new FormData();
+      setSubmitting(true);
+      const formData = new FormData();
 
-  formData.append("categoryName", selectedCategory.label);
-  formData.append("categoryDescription", categoryDescription);
+      formData.append("categoryName", selectedCategory.label);
+      formData.append("categoryDescription", categoryDescription);
 
-  if (categoryImage) {
-    formData.append("categoryImage", categoryImage);
-  }
+      if (categoryImage) {
+        formData.append("categoryImage", categoryImage);
+      }
 
-  const artPayload = artTypes.map((a) => ({
-    name: a.name,
-    description: a.description,
-  }));
+      const artPayload = artTypes.map((a) => ({
+        name: a.name,
+        description: a.description,
+      }));
 
-  formData.append("artTypes", JSON.stringify(artPayload));
+      formData.append("artTypes", JSON.stringify(artPayload));
 
-  artTypes.forEach((a) => {
-    if (a.image) formData.append("image", a.image);
-  });
+      artTypes.forEach((a) => {
+        if (a.image) formData.append("image", a.image);
+      });
 
-  if (selectedCategory.isNew) {
-    // ✅ create new category
-    await api.post("/categories", formData);
-    toast.success("Category created");
-  } else {
-    // ✅ add art type to existing category
-    await addArtTypeApi(selectedCategory.value, formData);
-    toast.success("Art type added");
-  }
+      if (selectedCategory.isNew) {
+        // ✅ create new category
+        await api.post("/categories", formData);
+        toast.success("Category created");
+      } else {
+        // ✅ add art type to existing category
+        await addArtTypeApi(selectedCategory.value, formData);
+        toast.success("Art type added");
+      }
 
-  navigate("/categories");
-} catch (err: any) {
-  toast.error(err.response?.data?.message || "Failed");
-}
-
+      navigate("/categories");
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Failed");
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   /* ---------- UI ---------- */
@@ -453,9 +466,12 @@ export default function AddCategory() {
         </button>
 
         <button
+          disabled={submitting}
           onClick={handleSubmit}
-          className="px-5 py-2 bg-[#83261D] text-white rounded-lg">
-          {isEditArtType ? "Update" : "Save"}
+          className={`px-5 py-2 rounded-lg text-white ${
+            submitting ? "bg-gray-400 cursor-not-allowed" : "bg-[#83261D]"
+          }`}>
+          {submitting ? "Saving..." : isEditArtType ? "Update" : "Save"}
         </button>
       </div>
     </div>
