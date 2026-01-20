@@ -27,7 +27,6 @@ export default function AddEvent() {
   const fileRef = useRef<HTMLInputElement | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
 
-
   const [form, setForm] = useState({
     title: "",
     description: "",
@@ -40,6 +39,7 @@ export default function AddEvent() {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [imageError, setImageError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   /* ---------- PREFILL ---------- */
   useEffect(() => {
@@ -56,39 +56,38 @@ export default function AddEvent() {
     }
   }, [editEvent]);
 
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await api.get("/categories");
 
-useEffect(() => {
-  const fetchCategories = async () => {
-    try {
-      const res = await api.get("/categories");
+        let categoryArray: any[] = [];
 
-      let categoryArray: any[] = [];
+        // CASE 1: response is already array
+        if (Array.isArray(res.data)) {
+          categoryArray = res.data;
+        }
 
-      // CASE 1: response is already array
-      if (Array.isArray(res.data)) {
-        categoryArray = res.data;
+        // CASE 2: response.data is array
+        else if (Array.isArray(res.data.data)) {
+          categoryArray = res.data.data;
+        }
+
+        // CASE 3: response.categories is array
+        else if (Array.isArray(res.data.categories)) {
+          categoryArray = res.data.categories;
+        }
+
+        setCategories(categoryArray);
+      } catch (error) {
+        console.error(error);
+        toast.error("Failed to load categories");
+        setCategories([]); // SAFETY
       }
+    };
 
-      // CASE 2: response.data is array
-      else if (Array.isArray(res.data.data)) {
-        categoryArray = res.data.data;
-      }
-
-      // CASE 3: response.categories is array
-      else if (Array.isArray(res.data.categories)) {
-        categoryArray = res.data.categories;
-      }
-
-      setCategories(categoryArray);
-    } catch (error) {
-      console.error(error);
-      toast.error("Failed to load categories");
-      setCategories([]); // SAFETY
-    }
-  };
-
-  fetchCategories();
-}, []);
+    fetchCategories();
+  }, []);
 
   /* ---------- IMAGE ---------- */
   const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -126,34 +125,37 @@ useEffect(() => {
   function handleChange(
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >
+    >,
   ) {
     setForm({ ...form, [e.target.name]: e.target.value });
   }
 
   /* ---------- SUBMIT ---------- */
- 
-async function handleSubmit() {
+
+  async function handleSubmit() {
+    if (isSubmitting) return;
     const { title, description, date, location, categories } = form;
 
     if (!title || !description || !date || !location || !categories) {
       toast.error("All fields are required");
       return;
     }
- 
+
     if (!editEvent && !imageFile) {
       toast.error("Image is required");
       return;
     }
- 
+
     try {
+      setIsSubmitting(true);
+
       const formData = new FormData();
       formData.append("title", title);
       formData.append("description", description);
       formData.append("date", date);
       formData.append("location", location);
       formData.append("categories", categories);
- 
+
       if (imageFile) {
         formData.append("image", imageFile);
       }
@@ -168,6 +170,8 @@ async function handleSubmit() {
       navigate("/events");
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Something went wrong");
+    } finally {
+      setIsSubmitting(false);
     }
   }
 
@@ -310,8 +314,17 @@ async function handleSubmit() {
 
         <button
           onClick={handleSubmit}
-          className="px-5 py-2 bg-[#83261D] text-white rounded-lg">
-          {editEvent ? "Update Event" : "Add Event"}
+          disabled={isSubmitting}
+          className={`px-5 py-2 rounded-lg text-white ${
+            isSubmitting ? "bg-gray-400 cursor-not-allowed" : "bg-[#83261D]"
+          }`}>
+          {isSubmitting
+            ? editEvent
+              ? "Updating..."
+              : "Adding..."
+            : editEvent
+              ? "Update Event"
+              : "Add Event"}
         </button>
       </div>
     </div>
