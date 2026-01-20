@@ -44,42 +44,34 @@ export default function EventList() {
   const [categoryFilter, setCategoryFilter] = useState("");
   const [tempCategory, setTempCategory] = useState("");
 
-  
   /* ---------- LOAD ---------- */
- 
-const loadEvents = async () => {
-  try {
-    const res = await getAllEventsApi();
- 
-    const formatted = res.data.data.map((e: any) => ({
-      ...e,
-      image: import.meta.env.VITE_API_BASE_URL + e.image
-    }));
- 
-    setEvents(formatted);
-  } catch {
-    toast.error("Failed to load events");
-  }
-};
-const loadEventCategories = async () => {
-  try {
-    const res = await fetch(
-      `${import.meta.env.VITE_API_BASE_URL}/api/categories`
-    );
-    const data = await res.json();
 
-    const names = data.data.map((c: any) => c.name);
-    setEventCategories(names);
-  } catch (err) {
-    console.error("Failed to load categories", err);
-  }
-};
+  const loadEvents = async () => {
+    try {
+      const res = await getAllEventsApi();
+      setEvents(res.data.data);
+    } catch {
+      toast.error("Failed to load events");
+    }
+  };
+  const loadEventCategories = async () => {
+    try {
+      const res = await fetch(
+        `${import.meta.env.VITE_API_BASE_URL}/api/categories`,
+      );
+      const data = await res.json();
 
- 
-useEffect(() => {
-  loadEvents();
-  loadEventCategories();
-}, []);
+      const names = data.data.map((c: any) => c.name);
+      setEventCategories(names);
+    } catch (err) {
+      console.error("Failed to load categories", err);
+    }
+  };
+
+  useEffect(() => {
+    loadEvents();
+    loadEventCategories();
+  }, []);
 
   useEffect(() => {
     loadEvents();
@@ -134,45 +126,44 @@ useEffect(() => {
   };
 
   /* ---------- DELETE ---------- */
-const handleDelete = async (id: string) => {
-  try {
-    await deleteEventApi(id);
-    toast.success("Event Deleted");
-    loadEvents();
-  } catch {
-    toast.error("Delete failed");
-  }
-};
- 
- console.log("Events are : ",events);
- console.log("Events are : ",events.length);
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteEventApi(id);
+      toast.success("Event Deleted");
+      loadEvents();
+    } catch {
+      toast.error("Delete failed");
+    }
+  };
+
+  console.log("Events are : ", events);
+  console.log("Events are : ", events.length);
   /* ---------- FILTER + SEARCH ---------- */
   const filtered = events.filter((e) => {
-  const v = search.toLowerCase();
+    const v = search.toLowerCase();
 
-  const matchesSearch =
-    e.title.toLowerCase().includes(v) ||
-    e.description.toLowerCase().includes(v) ||
-    e.location.toLowerCase().includes(v) ||
-    e.date.toLowerCase().includes(v);
+    const matchesSearch =
+      e.title.toLowerCase().includes(v) ||
+      e.description.toLowerCase().includes(v) ||
+      e.location.toLowerCase().includes(v) ||
+      e.date.toLowerCase().includes(v);
 
-  // const matchesDate = dateFilter ? e.date === dateFilter : true;
+    // const matchesDate = dateFilter ? e.date === dateFilter : true;
     const matchesDate = dateFilter
-    ? new Date(e.date).toISOString().slice(0, 10) === dateFilter
-    : true;
+      ? new Date(e.date).toISOString().slice(0, 10) === dateFilter
+      : true;
 
+    const matchesLocation = locationFilter
+      ? e.location.toLowerCase().includes(locationFilter.toLowerCase())
+      : true;
 
-  const matchesLocation = locationFilter
-    ? e.location.toLowerCase().includes(locationFilter.toLowerCase())
-    : true;
+    const matchesCategory = categoryFilter
+      ? e.categories?.trim().toLowerCase() ===
+        categoryFilter.trim().toLowerCase()
+      : true;
 
-  const matchesCategory = categoryFilter
-  ? e.categories?.trim().toLowerCase() === categoryFilter.trim().toLowerCase()
-  : true;
-
-
-  return matchesSearch && matchesDate && matchesLocation && matchesCategory;
-});
+    return matchesSearch && matchesDate && matchesLocation && matchesCategory;
+  });
 
   /* ---------- FILTER ACTIONS ---------- */
   const applyFilters = () => {
@@ -209,26 +200,17 @@ const handleDelete = async (id: string) => {
       />
     </div>
   );
-  // Formating the date
-//   const formatDate = (dateStr: string) => {
-//   if (!dateStr) return "";
-//   return new Date(dateStr).toLocaleDateString("en-US", {
-//     year: "numeric",
-//     month: "long",
-//     day: "numeric",
-//   });
-// };
+
   const formatDate = (dateStr: string) => {
-  if (!dateStr) return "";
+    if (!dateStr) return "";
 
-  const d = new Date(dateStr);
-  const day = String(d.getDate()).padStart(2, "0");
-  const month = String(d.getMonth() + 1).padStart(2, "0");
-  const year = d.getFullYear();
+    const d = new Date(dateStr);
+    const day = String(d.getDate()).padStart(2, "0");
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const year = d.getFullYear();
 
-  return `${day}-${month}-${year}`;
-};
-
+    return `${day}-${month}-${year}`;
+  };
 
   const headers: { key: SortKey; label: string }[] = [
     { key: "categories", label: "Category" },
@@ -280,7 +262,6 @@ const handleDelete = async (id: string) => {
               <button onClick={() => setCategoryFilter("")}>×</button>
             </span>
           )}
-
         </div>
 
         <div className="flex gap-3">
@@ -314,18 +295,17 @@ const handleDelete = async (id: string) => {
               <div>
                 <label className="text-xs">Category</label>
                 <select
-                    value={tempCategory}
-                    onChange={(e) => setTempCategory(e.target.value)}
-                    className="w-full border rounded-lg px-3 py-2 text-sm">
-                    <option value="">All</option>
+                  value={tempCategory}
+                  onChange={(e) => setTempCategory(e.target.value)}
+                  className="w-full border rounded-lg px-3 py-2 text-sm">
+                  <option value="">All</option>
 
-                    {eventCategories.map((cat) => (
-                      <option key={cat} value={cat}>
-                        {cat}
-                      </option>
-                    ))}
-                  </select>
-
+                  {eventCategories.map((cat) => (
+                    <option key={cat} value={cat}>
+                      {cat}
+                    </option>
+                  ))}
+                </select>
               </div>
               <div>
                 <label className="text-xs">Date</label>
@@ -366,228 +346,220 @@ const handleDelete = async (id: string) => {
       </div>
 
       {/* TABLE */}
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm border border-[#F1EEE7]">
-          <thead>
-            <tr>
-              <th className="p-3 text-left">Image</th>
+      <table className="w-full text-sm border border-[#F1EEE7]">
+        <thead>
+          <tr>
+            <th className="p-3 text-left">Image</th>
 
-              {headers.map((h) => (
-                <th
-                  key={h.key}
-                  onClick={() => sortData(h.key)}
-                  className="p-3 cursor-pointer text-left">
-                  <div className="flex items-center gap-2">
-                    {h.label}
-                    <SortIcon col={h.key} />
+            {headers.map((h) => (
+              <th
+                key={h.key}
+                onClick={() => sortData(h.key)}
+                className="p-3 cursor-pointer text-left">
+                <div className="flex items-center gap-2">
+                  {h.label}
+                  <SortIcon col={h.key} />
+                </div>
+              </th>
+            ))}
+
+            <th></th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {filtered.map((ev) => (
+            <tr key={ev._id} className="border-t">
+              <td className="p-3">
+                <img
+                  src={ev.image}
+                  alt={ev.title}
+                  className="w-12 h-12 rounded object-cover"
+                />
+              </td>
+
+              <td className="p-3 font-medium text-[#83261D]">
+                {ev.categories}
+              </td>
+
+              <td className="p-3">
+                <p className="font-medium">{ev.title}</p>
+                <p className="text-xs text-gray-500 truncate max-w-[240px]">
+                  {ev.description}
+                </p>
+              </td>
+
+              <td className="p-3">{formatDate(ev.date)}</td>
+
+              <td className="p-3">{ev.location}</td>
+
+              <td className="p-3 text-right relative event-menu">
+                <button
+                  onClick={() =>
+                    setOpenMenu(openMenu === ev._id ? null : ev._id)
+                  }>
+                  <MoreVertical size={18} />
+                </button>
+
+                {openMenu === ev._id && (
+                  <div className="absolute right-4 top-10 w-32 bg-white border rounded-lg shadow z-20">
+                    <button
+                      onClick={() => {
+                        setViewEvent(ev);
+                        setOpenMenu(null);
+                      }}
+                      className="block w-full px-4 py-2 text-left hover:bg-gray-100">
+                      View
+                    </button>
+
+                    <button
+                      onClick={() => navigate("/events/add", { state: ev })}
+                      className="block w-full px-4 py-2 text-left hover:bg-gray-100">
+                      Update
+                    </button>
+
+                    <button
+                      onClick={() => handleDelete(ev._id)}
+                      className="block w-full px-4 py-2 text-left text-red-600 hover:bg-gray-100">
+                      Delete
+                    </button>
                   </div>
-                </th>
-              ))}
+                )}
 
-              <th></th>
-            </tr>
-          </thead>
-
-          <tbody>
-            
-
-            {filtered.map((ev) => (
-              <tr key={ev._id} className="border-t">
-                <td className="p-3">
-                  <img
-                    src={ev.image}
-                    alt={ev.title}
-                    className="w-12 h-12 rounded object-cover"
-                  />
-                </td>
-
-                <td className="p-3 font-medium text-[#83261D]">
-                  {ev.categories}
-                </td>
-
-                <td className="p-3">
-                  <p className="font-medium">{ev.title}</p>
-                  <p className="text-xs text-gray-500 truncate max-w-[240px]">
-                    {ev.description}
-                  </p>
-                </td>
-
-                <td className="p-3">{formatDate(ev.date)}</td>
-
-                <td className="p-3">{ev.location}</td>
-
-                <td className="p-3 text-right relative event-menu">
-                  <button
-                    onClick={() =>
-                      setOpenMenu(openMenu === ev._id ? null : ev._id)
-                    }>
-                    <MoreVertical size={18} />
-                  </button>
-
-                  {openMenu === ev._id && (
-                    <div className="absolute right-4 top-10 w-32 bg-white border rounded-lg shadow z-20">
+                {viewEvent && (
+                  <div className="fixed inset-0 soft-blur flex items-center justify-center z-50 px-4">
+                    <div className="bg-white w-full max-w-xl rounded-[24px] overflow-hidden relative shadow-2xl border border-white/20">
                       <button
-                        onClick={() => {
-                          setViewEvent(ev);
-                          setOpenMenu(null);
-                        }}
-                        className="block w-full px-4 py-2 text-left hover:bg-gray-100">
-                        View
+                        onClick={() => setViewEvent(null)}
+                        className="absolute top-4 right-4 z-30 bg-white/90 hover:bg-white text-gray-900 rounded-full w-10 h-10 flex items-center justify-center shadow-lg transition-transform hover:scale-110 active:scale-95">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-6 w-6"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor">
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M6 18L18 6M6 6l12 12"
+                          />
+                        </svg>
                       </button>
 
-                      <button
-                        onClick={() => navigate("/events/add", { state: ev })}
-                        className="block w-full px-4 py-2 text-left hover:bg-gray-100">
-                        Update
-                      </button>
-
-                      <button
-                        onClick={() => handleDelete(ev._id)}
-                        className="block w-full px-4 py-2 text-left text-red-600 hover:bg-gray-100">
-                        Delete
-                      </button>
-                    </div>
-                  )}
-
-                  {viewEvent && (
-                    <div className="fixed inset-0 soft-blur flex items-center justify-center z-50 px-4">
-                      <div className="bg-white w-full max-w-xl rounded-[24px] overflow-hidden relative shadow-2xl border border-white/20">
-                        <button
-                          onClick={() => setViewEvent(null)}
-                          className="absolute top-4 right-4 z-30 bg-white/90 hover:bg-white text-gray-900 rounded-full w-10 h-10 flex items-center justify-center shadow-lg transition-transform hover:scale-110 active:scale-95">
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="h-6 w-6"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor">
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M6 18L18 6M6 6l12 12"
+                      <div className="relative h-64 overflow-hidden">
+                        {viewEvent.image ? (
+                          <>
+                            <img
+                              src={viewEvent.image}
+                              alt={viewEvent.title}
+                              className="w-full h-full object-cover transform hover:scale-105 transition-transform duration-700"
                             />
-                          </svg>
-                        </button>
-
-                        <div className="relative h-64 overflow-hidden">
-                          {viewEvent.image ? (
-                            <>
-                              <img
-                                src={viewEvent.image}
-                                alt={viewEvent.title}
-                                className="w-full h-full object-cover transform hover:scale-105 transition-transform duration-700"
+                            <div className="absolute inset-0 bg-gradient-to-t from-white via-white/20 to-transparent" />
+                          </>
+                        ) : (
+                          <div className="w-full h-full flex flex-col items-center justify-center bg-gray-100 text-gray-400">
+                            <svg
+                              className="w-12 h-12 opacity-20 mb-2"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24">
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth="2"
+                                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
                               />
-                              <div className="absolute inset-0 bg-gradient-to-t from-white via-white/20 to-transparent" />
-                            </>
-                          ) : (
-                            <div className="w-full h-full flex flex-col items-center justify-center bg-gray-100 text-gray-400">
+                            </svg>
+                            <span className="text-xs font-bold uppercase tracking-widest">
+                              Event Preview
+                            </span>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="px-8 pb-10 -mt-10 relative z-10">
+                        {/* Category Tag */}
+                        <div className="inline-flex items-center gap-2 bg-[#83261D] text-white text-[10px] font-black uppercase tracking-[0.15em] px-4 py-2 rounded-xl shadow-xl mb-4">
+                          <span className="w-2 h-2 bg-white rounded-full animate-pulse" />
+                          {viewEvent.categories}
+                        </div>
+                        <h2 className="text-4xl font-extrabold text-gray-900 tracking-tight leading-tight">
+                          {viewEvent.title}
+                        </h2>
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-4 mt-4 mb-6">
+                          <div className="flex items-center text-gray-600">
+                            <div className="p-2 bg-gray-100 rounded-lg mr-3">
                               <svg
-                                className="w-12 h-12 opacity-20 mb-2"
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="h-4 w-4 text-[#83261D]"
                                 fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24">
+                                viewBox="0 0 24 24"
+                                stroke="currentColor">
                                 <path
                                   strokeLinecap="round"
                                   strokeLinejoin="round"
-                                  strokeWidth="2"
+                                  strokeWidth={2}
                                   d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
                                 />
                               </svg>
-                              <span className="text-xs font-bold uppercase tracking-widest">
-                                Event Preview
-                              </span>
                             </div>
-                          )}
-                        </div>
-
-                        <div className="px-8 pb-10 -mt-10 relative z-10">
-                          {/* Category Tag */}
-                          <div className="inline-flex items-center gap-2 bg-[#83261D] text-white text-[10px] font-black uppercase tracking-[0.15em] px-4 py-2 rounded-xl shadow-xl mb-4">
-                            <span className="w-2 h-2 bg-white rounded-full animate-pulse" />
-                            {viewEvent.categories}
-                          </div>
-                          <h2 className="text-4xl font-extrabold text-gray-900 tracking-tight leading-tight">
-                            {viewEvent.title}
-                          </h2>
-                          <div className="flex flex-col sm:flex-row sm:items-center gap-4 mt-4 mb-6">
-                            <div className="flex items-center text-gray-600">
-                              <div className="p-2 bg-gray-100 rounded-lg mr-3">
-                                <svg
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  className="h-4 w-4 text-[#83261D]"
-                                  fill="none"
-                                  viewBox="0 0 24 24"
-                                  stroke="currentColor">
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                                  />
-                                </svg>
-                              </div>
-                              <div>
-                                <p className="text-[10px] uppercase font-bold text-gray-400 leading-none">
-                                  When
-                                </p>
-                                <p className="text-sm font-semibold">
-                                  {viewEvent.date}
-                                </p>
-                              </div>
-                            </div>
-
-                            <div className="flex items-center text-gray-600">
-                              <div className="p-2 bg-gray-100 rounded-lg mr-3">
-                                <svg
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  className="h-4 w-4 text-[#83261D]"
-                                  fill="none"
-                                  viewBox="0 0 24 24"
-                                  stroke="currentColor">
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                                  />
-                                </svg>
-                              </div>
-                              <div>
-                                <p className="text-[10px] uppercase font-bold text-gray-400 leading-none">
-                                  Where
-                                </p>
-                                <p className="text-sm font-semibold">
-                                  {viewEvent.location}
-                                </p>
-                              </div>
+                            <div>
+                              <p className="text-[10px] uppercase font-bold text-gray-400 leading-none">
+                                When
+                              </p>
+                              <p className="text-sm font-semibold">
+                                {viewEvent.date}
+                              </p>
                             </div>
                           </div>
 
-                          <div className="space-y-2">
-                            <label className="text-[10px] uppercase font-bold tracking-[0.1em] text-gray-400">
-                              About the event
-                            </label>
-                            <div className="bg-gray-50/80 rounded-2xl p-5 border border-gray-100">
-                              <p className="text-gray-600 text-[15px] leading-relaxed">
-                                {viewEvent.description}
+                          <div className="flex items-center text-gray-600">
+                            <div className="p-2 bg-gray-100 rounded-lg mr-3">
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="h-4 w-4 text-[#83261D]"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                                />
+                              </svg>
+                            </div>
+                            <div>
+                              <p className="text-[10px] uppercase font-bold text-gray-400 leading-none">
+                                Where
+                              </p>
+                              <p className="text-sm font-semibold">
+                                {viewEvent.location}
                               </p>
                             </div>
                           </div>
                         </div>
+
+                        <div className="space-y-2">
+                          <label className="text-[10px] uppercase font-bold tracking-[0.1em] text-gray-400">
+                            About the event
+                          </label>
+                          <div className="bg-gray-50/80 rounded-2xl p-5 border border-gray-100">
+                            <p className="text-gray-600 text-[15px] leading-relaxed">
+                              {viewEvent.description}
+                            </p>
+                          </div>
+                        </div>
                       </div>
                     </div>
-                  )}
-                </td>
-              </tr>
-            ))}
-
-            
-          </tbody>
-        </table>
-      </div>
-
-
+                  </div>
+                )}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }
