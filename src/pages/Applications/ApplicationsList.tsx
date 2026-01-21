@@ -9,7 +9,7 @@ export default function ApplicationsList() {
         title="Unearthify-Art From Applications"
         description=""
       />
-      <PageBreadcrumb pageTitle="Artists List" />
+      <PageBreadcrumb pageTitle="Art Form Registrations" />
           <ApplicationList/>
     </div>
   );

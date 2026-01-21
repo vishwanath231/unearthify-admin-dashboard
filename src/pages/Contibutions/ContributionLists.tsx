@@ -9,7 +9,7 @@ export default function ContibutionLists() {
         title="Unearthify-Contributions List"
         description=""
       />
-      <PageBreadcrumb pageTitle="Contributions List " />
+      <PageBreadcrumb pageTitle="Contributions" />
           <ContributionList/>
     </div>
   );

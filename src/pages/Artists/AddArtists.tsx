@@ -1,8 +1,9 @@
-import AddArtists from "../../components/Artists/AddArtists";
+import AddArtist from "../../components/Artists/AddArtist";
 import PageBreadcrumb from "../../components/common/PageBreadCrumb";
 import PageMeta from "../../components/common/PageMeta";
 
-export default function Artists() {
+export default function AddArtists() {
+  console.log("ADD ARTIST PAGE LOADED");
   return (
     <div>
       <PageMeta
@@ -10,7 +11,7 @@ export default function Artists() {
         description=""
       />
       <PageBreadcrumb pageTitle="Add Artists" />
-          <AddArtists/>
+        <AddArtist />
     </div>
   );
 }

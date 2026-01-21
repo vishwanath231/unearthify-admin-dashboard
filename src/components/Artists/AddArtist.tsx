@@ -15,7 +15,7 @@ type Artist = {
   image: string;
 };
 
-function AddArtists() {
+function AddArtist() {
   const navigate = useNavigate();
   const location = useLocation();
   const editArtist = location.state as Artist | null;
@@ -279,4 +279,4 @@ function AddArtists() {
   );
 }
 
-export default AddArtists;
+export default AddArtist;
