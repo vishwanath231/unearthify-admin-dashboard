@@ -5,8 +5,7 @@ import NotFound from "./pages/OtherPage/NotFound";
 import AppLayout from "./layout/AppLayout";
 import { ScrollToTop } from "./components/common/ScrollToTop";
 import Home from "./pages/Dashboard/Home";
-import Artists from "./pages/Artists/ArtistsList";
-import AddArtists from "./components/Artists/AddArtists";
+import AddArtists from "./pages/Artists/AddArtists";
 import { Toaster } from "react-hot-toast";
 import ProtectedRoute from "./pages/AuthPages/ProtectedRoute";
 import CategoriesList from "./pages/ArtForms/Categories/CategoriesList";
@@ -20,6 +19,7 @@ import { useEffect } from "react";
 import { autoLogout, startIdleLogout } from "./pages/AuthPages/Auth";
 import ApplicationsList from "./pages/Applications/ApplicationsList";
 import EventApplicationsList from "./pages/Applications/EventApplicationsList";
+import ArtistsLists from "./pages/Artists/ArtistsList";
 
 export default function App() {
   useEffect(() => {
@@ -44,9 +44,8 @@ export default function App() {
 
             {/* Others Page */}
             {/* <Route path="/profile" element={<UserProfiles />} /> */}
-            <Route path="/artists" element={<Artists />} />
+            <Route path="/artists" element={<ArtistsLists />} />
             <Route path="/artists/add" element={<AddArtists />} />
-            {/* <Route path="/blank" element={<Blank />} /> */}
 
             {/* Art Forms */}
             <Route path="/categories" element={<CategoriesList />} />

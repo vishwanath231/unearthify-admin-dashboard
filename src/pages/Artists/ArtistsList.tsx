@@ -2,7 +2,7 @@ import PageBreadcrumb from "../../components/common/PageBreadCrumb";
 import PageMeta from "../../components/common/PageMeta";
 import ArtistsList from "../../components/Artists/ArtistsList";
 
-export default function Artists() {
+export default function ArtistsLists() {
   return (
     <div>
       <PageMeta

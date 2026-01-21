@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState, useRef } from "react";
 import { MoreVertical } from "lucide-react";
 import { TiArrowSortedUp, TiArrowSortedDown } from "react-icons/ti";

@@ -9,7 +9,7 @@ export default function EventApplicationsList() {
         title="Unearthify-Event Applications"
         description=""
       />
-      <PageBreadcrumb pageTitle="Artists List" />
+      <PageBreadcrumb pageTitle="Events Registrations" />
           <EventApplicationList/>
     </div>
   );
