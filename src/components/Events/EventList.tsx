@@ -450,7 +450,7 @@ export default function EventList() {
                       <div
                         ref={modalRef}
                         onClick={(e) => e.stopPropagation()}
-                        className="bg-white w-full max-w-xl rounded-[24px] overflow-hidden relative shadow-2xl border border-white/20">
+                        className="bg-white w-full max-w-lg rounded-[2rem] overflow-hidden relative shadow-2xl">
                         <button
                           onClick={() => setViewEvent(null)}
                           className="absolute top-4 right-4 z-30 bg-white/90 hover:bg-white text-gray-900 rounded-full w-10 h-10 flex items-center justify-center shadow-lg transition-transform hover:scale-110 active:scale-95">
