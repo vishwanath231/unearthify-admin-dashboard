@@ -47,7 +47,7 @@ export default function EcommerceMetrics() {
         {
           label: "Total Artists",
           value: stats.artists,
-          icon: <MdOutlineDashboard  className="w-8 h-8" />,
+          icon: <MdOutlineDashboard  className="w-5 h-5" />,
           color: "#893128",
           bgColor: "bg-[#893128]",
           iconColor: "text-white",
@@ -55,7 +55,7 @@ export default function EcommerceMetrics() {
         {
           label: "Total Categories",
           value: stats.categories,
-          icon: <MdOutlineCategory  className="w-8 h-8" />,
+          icon: <MdOutlineCategory  className="w-5 h-5" />,
           color: "#893128",
           bgColor: "bg-[#893128]",
           iconColor: "text-white",
@@ -63,7 +63,7 @@ export default function EcommerceMetrics() {
         {
           label: "Total Art Types",
           value: stats.artTypes,
-          icon: <LuPalette className="w-8 h-8" />,
+          icon: <LuPalette className="w-5 h-5" />,
           color: "#893128",
           bgColor: "bg-[#893128]",
           iconColor: "text-white",
@@ -71,7 +71,7 @@ export default function EcommerceMetrics() {
         {
           label: "Total Events",
           value: stats.events,
-          icon: <BsCalendar4Event className="w-8 h-8" />,
+          icon: <BsCalendar4Event className="w-5 h-5" />,
           color: "#893128",
           bgColor: "bg-[#893128]",
           iconColor: "text-white",
@@ -79,7 +79,7 @@ export default function EcommerceMetrics() {
         {
           label: "Total Contributions",
           value: stats.contributions,
-          icon: <HiOutlineUsers  className="w-8 h-8" />,
+          icon: <HiOutlineUsers  className="w-5 h-5" />,
           color: "#893128",
           bgColor: "bg-[#893128]",
           iconColor: "text-white",
@@ -87,7 +87,7 @@ export default function EcommerceMetrics() {
         {
           label: "Registrations",
           value: stats.applications,
-          icon: <FaWpforms className="w-8 h-8" />,
+          icon: <FaWpforms className="w-5 h-5" />,
           color: "#893128",
           bgColor: "bg-[#893128]",
           iconColor: "text-white",
