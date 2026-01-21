@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { getAllEventsApi, deleteEventApi } from "../../api/eventApi";
 import { useNavigate } from "react-router";
 import toast from "react-hot-toast";
@@ -45,6 +45,7 @@ export default function EventList() {
   const [tempCategory, setTempCategory] = useState("");
   const [loading, setLoading] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const modalRef = useRef<HTMLDivElement>(null);
 
   /* ---------- LOAD ---------- */
 
@@ -94,8 +95,10 @@ export default function EventList() {
     const handleClick = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
 
+      // close menu
       if (!target.closest(".event-menu")) setOpenMenu(null);
 
+      // close filter
       if (!target.closest(".filter-box") && !target.closest(".filter-btn")) {
         setShowFilter(false);
       }
@@ -145,8 +148,6 @@ export default function EventList() {
     }
   };
 
-  console.log("Events are : ", events);
-  console.log("Events are : ", events.length);
   /* ---------- FILTER + SEARCH ---------- */
   const filtered = events.filter((e) => {
     const v = search.toLowerCase();
@@ -355,227 +356,232 @@ export default function EventList() {
       </div>
 
       {loading && (
-  <div className="py-10 text-center text-gray-500 font-medium">
-    Loading events...
-  </div>
-)}
+        <div className="py-10 text-center text-gray-500 font-medium">
+          Loading events...
+        </div>
+      )}
 
-    {!loading && (
-      <table className="w-full text-sm border border-[#F1EEE7]">
-        <thead>
-          <tr>
-            <th className="p-3 text-left">Image</th>
+      {!loading && (
+        <table className="w-full text-sm border border-[#F1EEE7]">
+          <thead>
+            <tr>
+              <th className="p-3 text-left">Image</th>
 
-            {headers.map((h) => (
-              <th
-                key={h.key}
-                onClick={() => sortData(h.key)}
-                className="p-3 cursor-pointer text-left">
-                <div className="flex items-center gap-2">
-                  {h.label}
-                  <SortIcon col={h.key} />
-                </div>
-              </th>
-            ))}
-
-            <th></th>
-          </tr>
-        </thead>
-
-        <tbody>
-          {filtered.map((ev) => (
-            <tr key={ev._id} className="border-t">
-              <td className="p-3">
-                <img
-                  src={ev.image}
-                  alt={ev.title}
-                  className="w-12 h-12 rounded object-cover"
-                />
-              </td>
-
-              <td className="p-3 font-medium text-[#83261D]">
-                {ev.categories}
-              </td>
-
-              <td className="p-3">
-                <p className="font-medium">{ev.title}</p>
-                <p className="text-xs text-gray-500 truncate max-w-[240px]">
-                  {ev.description}
-                </p>
-              </td>
-
-              <td className="p-3">{formatDate(ev.date)}</td>
-
-              <td className="p-3">{ev.location}</td>
-
-              <td className="p-3 text-right relative event-menu">
-                <button
-                  onClick={() =>
-                    setOpenMenu(openMenu === ev._id ? null : ev._id)
-                  }>
-                  <MoreVertical size={18} />
-                </button>
-
-                {openMenu === ev._id && (
-                  <div className="absolute right-4 top-10 w-32 bg-white border rounded-lg shadow z-20">
-                    <button
-                      onClick={() => {
-                        setViewEvent(ev);
-                        setOpenMenu(null);
-                      }}
-                      className="block w-full px-4 py-2 text-left hover:bg-gray-100">
-                      View
-                    </button>
-
-                    <button
-                      onClick={() => navigate("/events/add", { state: ev })}
-                      className="block w-full px-4 py-2 text-left hover:bg-gray-100">
-                      Update
-                    </button>
-
-                    <button
-                      disabled={deletingId === ev._id}
-                      onClick={() => handleDelete(ev._id)}
-                      className="block w-full px-4 py-2 text-left text-red-600 hover:bg-gray-100 disabled:opacity-50">
-                      {deletingId === ev._id ? "Deleting..." : "Delete"}
-                    </button>
+              {headers.map((h) => (
+                <th
+                  key={h.key}
+                  onClick={() => sortData(h.key)}
+                  className="p-3 cursor-pointer text-left">
+                  <div className="flex items-center gap-2">
+                    {h.label}
+                    <SortIcon col={h.key} />
                   </div>
-                )}
+                </th>
+              ))}
 
-                {viewEvent && (
-                  <div className="fixed inset-0 soft-blur flex items-center justify-center z-50 px-4">
-                    <div className="bg-white w-full max-w-xl rounded-[24px] overflow-hidden relative shadow-2xl border border-white/20">
+              <th></th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {filtered.map((ev) => (
+              <tr key={ev._id} className="border-t">
+                <td className="p-3">
+                  <img
+                    src={ev.image}
+                    alt={ev.title}
+                    className="w-12 h-12 rounded object-cover"
+                  />
+                </td>
+
+                <td className="p-3 font-medium text-[#83261D]">
+                  {ev.categories}
+                </td>
+
+                <td className="p-3">
+                  <p className="font-medium">{ev.title}</p>
+                  <p className="text-xs text-gray-500 truncate max-w-[240px]">
+                    {ev.description}
+                  </p>
+                </td>
+
+                <td className="p-3">{formatDate(ev.date)}</td>
+
+                <td className="p-3">{ev.location}</td>
+
+                <td className="p-3 text-right relative event-menu">
+                  <button
+                    onClick={() =>
+                      setOpenMenu(openMenu === ev._id ? null : ev._id)
+                    }>
+                    <MoreVertical size={18} />
+                  </button>
+
+                  {openMenu === ev._id && (
+                    <div className="absolute right-4 top-10 w-32 bg-white border rounded-lg shadow z-20">
                       <button
-                        onClick={() => setViewEvent(null)}
-                        className="absolute top-4 right-4 z-30 bg-white/90 hover:bg-white text-gray-900 rounded-full w-10 h-10 flex items-center justify-center shadow-lg transition-transform hover:scale-110 active:scale-95">
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="h-6 w-6"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor">
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M6 18L18 6M6 6l12 12"
-                          />
-                        </svg>
+                        onClick={() => {
+                          setViewEvent(ev);
+                          setOpenMenu(null);
+                        }}
+                        className="block w-full px-4 py-2 text-left hover:bg-gray-100">
+                        View
                       </button>
 
-                      <div className="relative h-64 overflow-hidden">
-                        {viewEvent.image ? (
-                          <>
-                            <img
-                              src={viewEvent.image}
-                              alt={viewEvent.title}
-                              className="w-full h-full object-cover transform hover:scale-105 transition-transform duration-700"
-                            />
-                            <div className="absolute inset-0 bg-gradient-to-t from-white via-white/20 to-transparent" />
-                          </>
-                        ) : (
-                          <div className="w-full h-full flex flex-col items-center justify-center bg-gray-100 text-gray-400">
-                            <svg
-                              className="w-12 h-12 opacity-20 mb-2"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24">
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth="2"
-                                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                              />
-                            </svg>
-                            <span className="text-xs font-bold uppercase tracking-widest">
-                              Event Preview
-                            </span>
-                          </div>
-                        )}
-                      </div>
+                      <button
+                        onClick={() => navigate("/events/add", { state: ev })}
+                        className="block w-full px-4 py-2 text-left hover:bg-gray-100">
+                        Update
+                      </button>
 
-                      <div className="px-8 pb-10 -mt-10 relative z-10">
-                        {/* Category Tag */}
-                        <div className="inline-flex items-center gap-2 bg-[#83261D] text-white text-[10px] font-black uppercase tracking-[0.15em] px-4 py-2 rounded-xl shadow-xl mb-4">
-                          <span className="w-2 h-2 bg-white rounded-full animate-pulse" />
-                          {viewEvent.categories}
-                        </div>
-                        <h2 className="text-4xl font-extrabold text-gray-900 tracking-tight leading-tight">
-                          {viewEvent.title}
-                        </h2>
-                        <div className="flex flex-col sm:flex-row sm:items-center gap-4 mt-4 mb-6">
-                          <div className="flex items-center text-gray-600">
-                            <div className="p-2 bg-gray-100 rounded-lg mr-3">
+                      <button
+                        disabled={deletingId === ev._id}
+                        onClick={() => handleDelete(ev._id)}
+                        className="block w-full px-4 py-2 text-left text-red-600 hover:bg-gray-100 disabled:opacity-50">
+                        {deletingId === ev._id ? "Deleting..." : "Delete"}
+                      </button>
+                    </div>
+                  )}
+
+                  {viewEvent && (
+                    <div
+                      className="fixed inset-0 soft-blur flex items-center justify-center z-50 px-4"
+                      onClick={() => setViewEvent(null)}>
+                      <div
+                        ref={modalRef}
+                        onClick={(e) => e.stopPropagation()}
+                        className="bg-white w-full max-w-xl rounded-[24px] overflow-hidden relative shadow-2xl border border-white/20">
+                        <button
+                          onClick={() => setViewEvent(null)}
+                          className="absolute top-4 right-4 z-30 bg-white/90 hover:bg-white text-gray-900 rounded-full w-10 h-10 flex items-center justify-center shadow-lg transition-transform hover:scale-110 active:scale-95">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-6 w-6"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M6 18L18 6M6 6l12 12"
+                            />
+                          </svg>
+                        </button>
+
+                        <div className="relative h-64 overflow-hidden">
+                          {viewEvent.image ? (
+                            <>
+                              <img
+                                src={viewEvent.image}
+                                alt={viewEvent.title}
+                                className="w-full h-full object-cover transform hover:scale-105 transition-transform duration-700"
+                              />
+                              <div className="absolute inset-0 bg-gradient-to-t from-white via-white/20 to-transparent" />
+                            </>
+                          ) : (
+                            <div className="w-full h-full flex flex-col items-center justify-center bg-gray-100 text-gray-400">
                               <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                className="h-4 w-4 text-[#83261D]"
+                                className="w-12 h-12 opacity-20 mb-2"
                                 fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor">
+                                stroke="currentColor"
+                                viewBox="0 0 24 24">
                                 <path
                                   strokeLinecap="round"
                                   strokeLinejoin="round"
-                                  strokeWidth={2}
+                                  strokeWidth="2"
                                   d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
                                 />
                               </svg>
+                              <span className="text-xs font-bold uppercase tracking-widest">
+                                Event Preview
+                              </span>
                             </div>
-                            <div>
-                              <p className="text-[10px] uppercase font-bold text-gray-400 leading-none">
-                                When
-                              </p>
-                              <p className="text-sm font-semibold">
-                                {viewEvent.date}
-                              </p>
-                            </div>
-                          </div>
-
-                          <div className="flex items-center text-gray-600">
-                            <div className="p-2 bg-gray-100 rounded-lg mr-3">
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                className="h-4 w-4 text-[#83261D]"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor">
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                                />
-                              </svg>
-                            </div>
-                            <div>
-                              <p className="text-[10px] uppercase font-bold text-gray-400 leading-none">
-                                Where
-                              </p>
-                              <p className="text-sm font-semibold">
-                                {viewEvent.location}
-                              </p>
-                            </div>
-                          </div>
+                          )}
                         </div>
 
-                        <div className="space-y-2">
-                          <label className="text-[10px] uppercase font-bold tracking-[0.1em] text-gray-400">
-                            About the event
-                          </label>
-                          <div className="bg-gray-50/80 rounded-2xl p-5 border border-gray-100">
-                            <p className="text-gray-600 text-[15px] leading-relaxed">
-                              {viewEvent.description}
-                            </p>
+                        <div className="px-8 pb-10 -mt-10 relative z-10">
+                          {/* Category Tag */}
+                          <div className="inline-flex items-center gap-2 bg-[#83261D] text-white text-[10px] font-black uppercase tracking-[0.15em] px-4 py-2 rounded-xl shadow-xl mb-4">
+                            <span className="w-2 h-2 bg-white rounded-full animate-pulse" />
+                            {viewEvent.categories}
+                          </div>
+                          <h2 className="text-4xl font-extrabold text-gray-900 tracking-tight leading-tight">
+                            {viewEvent.title}
+                          </h2>
+                          <div className="flex flex-col sm:flex-row sm:items-center gap-4 mt-4 mb-6">
+                            <div className="flex items-center text-gray-600">
+                              <div className="p-2 bg-gray-100 rounded-lg mr-3">
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  className="h-4 w-4 text-[#83261D]"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                  stroke="currentColor">
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                                  />
+                                </svg>
+                              </div>
+                              <div>
+                                <p className="text-[10px] uppercase font-bold text-gray-400 leading-none">
+                                  When
+                                </p>
+                                <p className="text-sm font-semibold">
+                                  {viewEvent.date}
+                                </p>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center text-gray-600">
+                              <div className="p-2 bg-gray-100 rounded-lg mr-3">
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  className="h-4 w-4 text-[#83261D]"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                  stroke="currentColor">
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                                  />
+                                </svg>
+                              </div>
+                              <div>
+                                <p className="text-[10px] uppercase font-bold text-gray-400 leading-none">
+                                  Where
+                                </p>
+                                <p className="text-sm font-semibold">
+                                  {viewEvent.location}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="space-y-2">
+                            <label className="text-[10px] uppercase font-bold tracking-[0.1em] text-gray-400">
+                              About the event
+                            </label>
+                            <div className="bg-gray-50/80 rounded-2xl p-5 border border-gray-100">
+                              <p className="text-gray-600 text-[15px] leading-relaxed">
+                                {viewEvent.description}
+                              </p>
+                            </div>
                           </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                )}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       )}
     </div>
   );

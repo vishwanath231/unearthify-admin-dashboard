@@ -18,6 +18,8 @@ import AddEvents from "./pages/Events/AddEvents";
 import ContibutionLists from "./pages/Contibutions/ContributionLists";
 import { useEffect } from "react";
 import { autoLogout, startIdleLogout } from "./pages/AuthPages/Auth";
+import ApplicationsList from "./pages/Applications/ApplicationsList";
+import EventApplicationsList from "./pages/Applications/EventApplicationsList";
 
 export default function App() {
   useEffect(() => {
@@ -58,6 +60,12 @@ export default function App() {
 
             {/* Contributes */}
             <Route path="/contributions" element={<ContibutionLists />} />
+
+            {/* Art Form Applications */}
+            <Route path="/applications" element={<ApplicationsList/>} />
+
+            {/* Event Applications */}
+            <Route path="/eventApplications" element={<EventApplicationsList/>} />
  
           </Route>
 
