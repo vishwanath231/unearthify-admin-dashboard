@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { MoreVertical } from "lucide-react";
-import { useNavigate } from "react-router";
 import { TiArrowSortedUp, TiArrowSortedDown } from "react-icons/ti";
 import { PiSlidersHorizontalBold } from "react-icons/pi";
 import toast from "react-hot-toast";
@@ -22,8 +21,6 @@ export type Contribution = {
 type SortKey = "name" | "mobileNumber" | "contributionType";
 
 export default function ContributionList() {
-  const navigate = useNavigate();
-
   const [data, setData] = useState<Contribution[]>([]);
   const [openMenu, setOpenMenu] = useState<string | null>(null);
 
@@ -42,6 +39,7 @@ export default function ContributionList() {
   const [viewContribution, setViewContribution] = useState<Contribution | null>(
     null,
   );
+  const modalRef = useRef<HTMLDivElement>(null);
 
   const ITEMS_PER_PAGE = 10;
 
@@ -65,22 +63,23 @@ export default function ContributionList() {
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
+
+      // menu
       if (!target.closest(".contribution-menu")) {
         setOpenMenu(null);
       }
-    };
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, []);
 
-  /* ---------- OUTSIDE CLICK (filter) ---------- */
-  useEffect(() => {
-    const handleClick = (e: MouseEvent) => {
-      const target = e.target as HTMLElement;
+      // filter
       if (!target.closest(".filter-box") && !target.closest(".filter-btn")) {
         setShowFilter(false);
       }
+
+      // modal
+      if (modalRef.current && !modalRef.current.contains(target)) {
+        setViewContribution(null);
+      }
     };
+
     document.addEventListener("mousedown", handleClick);
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
@@ -190,17 +189,6 @@ export default function ContributionList() {
 
   return (
     <div className="p-6 bg-white rounded-xl shadow">
-      {/* Header */}
-      <div className="flex items-center justify-end mb-4">
-        <button
-          onClick={() => navigate("/contribution/add")}
-          className="bg-[#83261D] text-white px-4 py-2 rounded-lg">
-          + Add Contribution
-        </button>
-      </div>
-
-      <hr className="my-3" />
-
       {/* Search & filter */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-5">
         <div className="flex flex-wrap items-center gap-2 w-full">
@@ -334,14 +322,6 @@ export default function ContributionList() {
                       </button>
 
                       <button
-                        onClick={() =>
-                          navigate("/contribution/add", { state: c })
-                        }
-                        className="block w-full px-4 py-2 text-left hover:bg-gray-100">
-                        Update
-                      </button>
-
-                      <button
                         onClick={() => handleDelete(c._id)}
                         disabled={deletingId === c._id}
                         className="block w-full px-4 py-2 text-left text-red-600 hover:bg-gray-100 disabled:opacity-50">
@@ -352,7 +332,9 @@ export default function ContributionList() {
 
                   {viewContribution && (
                     <div className="fixed inset-0 soft-blur flex items-center justify-center z-50 px-4">
-                      <div className="bg-white w-full max-w-md rounded-[32px] overflow-hidden relative shadow-[0_20px_50px_rgba(0,0,0,0.3)] border border-gray-100">
+                      <div
+                        ref={modalRef}
+                        className="bg-white w-full max-w-md rounded-[32px] overflow-hidden relative shadow-[0_20px_50px_rgba(0,0,0,0.3)] border border-gray-100">
                         <button
                           onClick={() => setViewContribution(null)}
                           className="absolute top-5 right-5 z-20 text-gray-400 hover:text-gray-900 transition-colors">

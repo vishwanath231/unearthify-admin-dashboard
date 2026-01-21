@@ -4,13 +4,15 @@ import logo from "../assets/logo.jpg";
 
 import {
   ChevronDownIcon,
-  GridIcon,
   HorizontaLDots,
-  TableIcon
 } from "../icons";
 import { useSidebar } from "../context/SidebarContext";
-import { FaFlag, FaUser } from "react-icons/fa";
+import { FaUser } from "react-icons/fa";
 import { FaPalette } from "react-icons/fa6";
+import { BsFillCalendarEventFill } from "react-icons/bs";
+import { BiSolidDashboard } from "react-icons/bi";
+import { SiGoogleforms } from "react-icons/si";
+import { HiUsers } from "react-icons/hi";
 
 type NavItem = {
   name: string;
@@ -21,12 +23,12 @@ type NavItem = {
 
 const navItems: NavItem[] = [
   {
-    icon: <GridIcon />,
+    icon: <BiSolidDashboard  className="text-[#893128]" />,
     name: "Dashboard",
     path: "/",  
   },
   {
-    icon: <FaUser />,
+    icon: <FaUser className="text-[#893128]" />,
     name: "Artists",
     path: "/artists",
     subItems: [
@@ -35,7 +37,7 @@ const navItems: NavItem[] = [
     ],
   },
   {
-    icon: <FaPalette />,
+    icon: <FaPalette className="text-[#893128]" />,
     name: "Art Forms",
     subItems: [
       { name: "Categories List", path: "/categories", pro: false },
@@ -46,17 +48,26 @@ const navItems: NavItem[] = [
   },
   {
     name: "Events",
-    icon: <FaFlag />,
+    icon: <BsFillCalendarEventFill className="text-[#893128]" />,
     subItems: [
       { name: "Event List", path: "/events", pro: false },
       { name: "Add Event", path: "/events/add", pro: false },
     ],
   },
   {
+    icon: <SiGoogleforms  className="text-[#893128]" />,
+    name: "Registrations",
+    path: "/applications",
+    subItems: [
+      { name: "Art Form", path: "/applications", pro: false },
+      { name: "Events", path: "/eventApplications", pro: false },
+    ],
+  },
+  {
     name: "Contribute",
-    icon: <TableIcon />,
+    icon: <HiUsers className="text-[#893128]" />,
     path: "/contributions",
-  }
+  },
 ]
 
 const othersItems: NavItem[] = [];

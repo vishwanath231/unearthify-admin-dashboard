@@ -111,15 +111,15 @@ function ArtistsList() {
     try {
       const token = localStorage.getItem("token");
       if (!token) return toast.error("Unauthorized");
-      
-      setDeletingId(id)
+
+      setDeletingId(id);
       await deleteArtistApi(id);
       toast.success("Artist deleted");
       loadArtists();
     } catch {
       toast.error("Delete failed");
-    }finally{
-      setDeletingId(null)
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -445,8 +445,12 @@ function ArtistsList() {
                   )}
 
                   {viewArtist && (
-                    <div className="fixed inset-0 soft-blur flex items-center justify-center z-50 px-4">
-                      <div className="bg-white w-full max-w-lg rounded-[2rem] overflow-hidden relative shadow-2xl">
+                    <div
+                      className="fixed inset-0 soft-blur flex items-center justify-center z-50 px-4"
+                      onClick={() => setViewArtist(null)}>
+                      <div
+                        className="bg-white w-full max-w-lg rounded-[2rem] overflow-hidden relative shadow-2xl"
+                        onClick={(e) => e.stopPropagation()}>
                         <button
                           onClick={() => setViewArtist(null)}
                           className="absolute top-4 right-4 z-20 bg-black backdrop-blur-md text-white rounded-full w-10 h-10 flex items-center justify-center transition-all shadow-lg">

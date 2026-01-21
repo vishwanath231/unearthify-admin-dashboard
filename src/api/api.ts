@@ -4,4 +4,6 @@ export const API = {
     SIGN_UP: `${HOST_URL}/api/register`,
     ARTIST: `${HOST_URL}/api/artists`,
     DASHBOARD:`${HOST_URL}/api/dashboard`,
+    APPLICATIONS: `${HOST_URL}/api/applications`,
+    EVENT_APPLICATIONS: `${HOST_URL}/api/eventApplications`
 }
