@@ -338,7 +338,7 @@ export default function CategoryList() {
                   </td>
 
                   <td className="p-3 font-medium">{cat.name}</td>
-                  <td className="p-3 text-gray-600">{cat.description}</td>
+                  <td className="p-3 text-gray-600 text-justify">{cat.description}</td>
 
                   <td className="p-3 text-gray-700">
                     {cat.artTypes.length > 0 ? (
@@ -404,8 +404,8 @@ export default function CategoryList() {
       )}
 
       {viewArt && (
-        <div className="fixed inset-0 soft-blur flex items-center justify-center z-50 px-4">
-          <div className="bg-white w-full max-w-xl max-h-[90vh] rounded-[32px] overflow-y-auto relative shadow-[0_30px_70px_rgba(0,0,0,0.5)] border border-white/20 animate-in zoom-in-95 duration-300">
+        <div className="fixed inset-0 soft-blur flex items-center justify-center z-50 px-4" onClick={() => setViewArt(null)}>
+          <div className="bg-white w-full max-w-xl max-h-[90vh] rounded-[32px] overflow-y-auto relative shadow-[0_30px_70px_rgba(0,0,0,0.5)] border border-white/20 animate-in zoom-in-95 duration-300" onClick={(e) => e.stopPropagation()}>
             <button
               onClick={() => setViewArt(null)}
               className="absolute top-5 right-5 z-50 bg-black hover:bg-[#83261D] backdrop-blur-md text-white rounded-full w-10 h-10 flex items-center justify-center transition-all duration-300 shadow-xl group border border-white/20">
@@ -432,7 +432,7 @@ export default function CategoryList() {
               />
             </div>
 
-            <div className="px-10 pb-10 pt-8 relative">
+            <div className="px-10 pb-2 pt-8 relative">
               {/* Label */}
               <span className="inline-block mb-2 text-xs font-bold tracking-widest text-[#83261D] uppercase">
                 Art Type
@@ -448,12 +448,12 @@ export default function CategoryList() {
                 Type Description
               </span>
               <div className="relative">
-                <p className="text-base font-normal leading-relaxed text-justify text-gray-800 mb-6 max-w-[90%]">
+                <p className="text-base font-normal leading-relaxed text-justify text-gray-800 max-w-[90%]">
                   {viewArt.description}
                 </p>
               </div>
             </div>
-            <div className="flex justify-end gap-3 m-4">
+            <div className="flex justify-end gap-3 m-8">
               <button
                 onClick={() =>
                   navigate("/categories/add", {

@@ -446,10 +446,10 @@ function ArtistsList() {
 
                   {viewArtist && (
                     <div
-                      className="fixed inset-0 soft-blur flex items-center justify-center z-50 px-4"
+                      className="fixed inset-0 backdrop-blur-[0.5px] bg-white/0.8 flex items-center justify-center z-50 px-4"
                       onClick={() => setViewArtist(null)}>
                       <div
-                        className="bg-white w-full max-w-lg rounded-[2rem] overflow-hidden relative shadow-2xl"
+                        className="bg-white w-full max-w-lg rounded-[2rem]  overflow-hidden relative shadow-sm"
                         onClick={(e) => e.stopPropagation()}>
                         <button
                           onClick={() => setViewArtist(null)}
@@ -475,7 +475,7 @@ function ArtistsList() {
                               <img
                                 src={viewArtist.image}
                                 alt={viewArtist.name}
-                                className="w-full h-full object-cover"
+                                className="w-full h-full"
                               />
                               <div className="absolute inset-0 bg-gradient-to-t from-white via-transparent to-transparent" />
                             </>
@@ -549,7 +549,7 @@ function ArtistsList() {
                                 </svg>
                                 About the Artist
                               </p>
-                              <p className="text-gray-600 text-sm leading-relaxed italic bg-gray-50 p-4 rounded-2xl">
+                              <p className="text-gray-600 text-sm text-justify leading-relaxed italic bg-gray-50 p-4 rounded-2xl">
                                 "
                                 {viewArtist.bio ||
                                   "This artist hasn't shared their story yet."}
