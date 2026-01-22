@@ -484,7 +484,7 @@ export default function EventApplicationList() {
                     <p className="text-[11px] text-gray-400 font-bold uppercase tracking-wide">
                       Detailed Address
                     </p>
-                    <p className="text-gray-600 text-sm leading-relaxed">
+                    <p className="text-gray-600 text-sm leading-relaxed text-justify">
                       {viewApplication.address}
                     </p>
                   </div>

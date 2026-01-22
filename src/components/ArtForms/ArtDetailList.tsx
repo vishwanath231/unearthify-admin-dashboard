@@ -445,7 +445,7 @@ export default function ArtDetailList() {
             {filteredDetails.map((d) => (
               <tr key={d._id} className="border-t">
                 <td className="p-3">{d.origin}</td>
-                <td className="p-3">{d.materials}</td>
+                <td className="p-3 text-justify">{d.materials}</td>
                 <td className="p-3">{d.famousArtist}</td>
                 <td className="p-3">{d.region}</td>
                 <td className="p-3">{d.websiteLink}</td>
@@ -582,7 +582,7 @@ export default function ArtDetailList() {
                       <p className="text-[10px] font-black uppercase tracking-widest text-[#83261D] mb-0.5">
                         {item.label}
                       </p>
-                      <p className="text-gray-800 font-bold text-sm leading-tight break-all">
+                      <p className="text-gray-800 font-bold text-sm leading-tight break-all text-justify">
                         {item.value || "Not Specified"}
                       </p>
                     </div>

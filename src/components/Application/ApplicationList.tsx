@@ -465,7 +465,7 @@ export default function ApplicationList() {
                     <p className="text-xs text-gray-400 font-medium">
                       Residential Address
                     </p>
-                    <p className="text-gray-700 leading-relaxed">
+                    <p className="text-gray-700 leading-relaxed text-justify">
                       {viewApplication.address}
                     </p>
                   </div>

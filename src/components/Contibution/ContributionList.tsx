@@ -388,7 +388,7 @@ export default function ContributionList() {
                                 Message/Notes
                               </p>
                               <div className="bg-gray-50/80 p-4 rounded-xl">
-                                <p className="text-gray-600 text-[14px] leading-relaxed italic">
+                                <p className="text-gray-600 text-[14px] leading-relaxed italic text-justify">
                                   "
                                   {viewContribution.description ||
                                     "No specific notes provided for this contribution."}
