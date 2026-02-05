@@ -3,6 +3,8 @@ import { useState, useRef, ChangeEvent, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router";
 import toast from "react-hot-toast";
 import { createArtistApi, updateArtistApi } from "../../api/artistApi";
+import { State, City } from "country-state-city";
+
 
 type Artist = {
   _id: string;
@@ -14,6 +16,8 @@ type Artist = {
   bio: string;
   image: string;
 };
+const DEFAULT_ARTIST_IMAGE ="https://res.cloudinary.com/ddni4sjyo/image/upload/v1770180830/default%20image/person_kjmhx8.jpg";
+
 
 function AddArtist() {
   const navigate = useNavigate();
@@ -26,13 +30,37 @@ function AddArtist() {
   const [artForm, setArtForm] = useState("");
   const [city, setCity] = useState("");
   const [stateName, setStateName] = useState("");
-  const [country, setCountry] = useState("");
+  const [country, setCountry] = useState("India");
   const [bio, setBio] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imageError, setImageError] = useState("");
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [states, setStates] = useState<any[]>([]);
+  const [cities, setCities] = useState<any[]>([]);
+
+  //Loading the states in India
+
+  useEffect(() => {
+  const indianStates = State.getStatesOfCountry("IN");
+  setStates(indianStates);
+  }, []);
+
+  const handleStateChange = (stateName: string) => {
+  setStateName(stateName);
+  setCity(""); 
+
+  const stateObj = states.find((s) => s.name === stateName);
+  if (stateObj) {
+    const cityList = City.getCitiesOfState("IN", stateObj.isoCode);
+    setCities(cityList);
+  } else {
+    setCities([]);
+  }
+};
+
+
 
   const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -84,15 +112,23 @@ function AddArtist() {
       formData.append("country", country);
       formData.append("bio", bio);
 
+      // if (imageFile) {
+      //   formData.append("image", imageFile);
+      // }
       if (imageFile) {
+        // user selected image
         formData.append("image", imageFile);
+      } else if (!editArtist) {
+        // creating artist without image → use default
+        formData.append("imageUrl", DEFAULT_ARTIST_IMAGE);
       }
+
 
       if (editArtist) {
         await updateArtistApi(editArtist._id, formData);
         toast.success("Artist updated");
       } else {
-        if (!imageFile) return toast.error("Image is required");
+        // if (!imageFile) return toast.error("Image is required");
         await createArtistApi(formData);
         toast.success("Artist created");
       }
@@ -107,16 +143,25 @@ function AddArtist() {
   };
 
   useEffect(() => {
-    if (editArtist) {
-      setName(editArtist.name || "");
-      setArtForm(editArtist.artForm || "");
-      setCity(editArtist.city || "");
-      setStateName(editArtist.state || "");
-      setCountry(editArtist.country || "");
-      setBio(editArtist.bio || "");
-      setExistingImage(editArtist.image);
+  if (editArtist) {
+    setName(editArtist.name || "");
+    setArtForm(editArtist.artForm || "");
+    setStateName(editArtist.state || "");
+    setCity(editArtist.city || "");
+    setCountry("India");
+    setBio(editArtist.bio || "");
+    setExistingImage(editArtist.image);
+
+    // preload cities for edit
+    const stateObj = State.getStatesOfCountry("IN").find(
+      (s) => s.name === editArtist.state
+    );
+    if (stateObj) {
+      setCities(City.getCitiesOfState("IN", stateObj.isoCode));
     }
-  }, [editArtist]);
+  }
+}, [editArtist]);
+
 
   return (
     <div className="relative bg-white p-4 rounded-lg shadow">
@@ -154,38 +199,45 @@ function AddArtist() {
             />
           </div>
 
-          <div>
-            <label className="text-sm font-medium">City</label>
-            <input
-              value={city}
-              required
-              onChange={(e) => setCity(e.target.value)}
-              className="input mt-1"
-              placeholder="Enter artist city"
-            />
-          </div>
+          <input
+            value={country}
+            readOnly
+            className="input mt-1 bg-gray-100 cursor-not-allowed"
+          />
 
-          <div>
-            <label className="text-sm font-medium">State</label>
-            <input
-              value={stateName}
-              required
-              onChange={(e) => setStateName(e.target.value)}
-              className="input mt-1"
-              placeholder="Enter artist state"
-            />
-          </div>
+          <select
+            value={stateName}
+            required
+            onChange={(e) => handleStateChange(e.target.value)}
+            className="input mt-1 bg-white"
+          >
+            <option value="">-- Select State --</option>
+            {states.map((s) => (
+              <option key={s.isoCode} value={s.name}>
+                {s.name}
+              </option>
+            ))}
+          </select>
+           <select
+            value={city}
+            required
+            disabled={!stateName}
+            onChange={(e) => setCity(e.target.value)}
+            className="input mt-1 bg-white disabled:bg-gray-100"
+          >
+            <option value="">
+              {stateName ? "-- Select City --" : "Select state first"}
+            </option>
 
-          <div>
-            <label className="text-sm font-medium">Country</label>
-            <input
-              value={country}
-              required
-              onChange={(e) => setCountry(e.target.value)}
-              className="input mt-1"
-              placeholder="Enter artist country"
-            />
-          </div>
+            {cities.map((c) => (
+              <option key={c.name} value={c.name}>
+                {c.name}
+              </option>
+            ))}
+          </select>
+
+
+
         </div>
         <div className="md:col-span-2">
           <label className="text-sm font-medium">Bio</label>

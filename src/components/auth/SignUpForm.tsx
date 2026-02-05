@@ -32,18 +32,18 @@ export default function SignUpForm() {
       if (password.length < 8 || password.length > 10) {
         return "Password must be 8 to 10 characters long";
       }
-      if (!/[A-Z]/.test(password)) {
-        return "Password must contain at least one uppercase letter";
-      }
-      if (!/[a-z]/.test(password)) {
-        return "Password must contain at least one lowercase letter";
-      }
-      if (!/\d/.test(password)) {
-        return "Password must contain at least one number";
-      }
-      if (!/[@$!%*?&]/.test(password)) {
-        return "Password must contain at least one special character (@$!%*?&)";
-      }
+      // if (!/[A-Z]/.test(password)) {
+      //   return "Password must contain at least one uppercase letter";
+      // }
+      // if (!/[a-z]/.test(password)) {
+      //   return "Password must contain at least one lowercase letter";
+      // }
+      // if (!/\d/.test(password)) {
+      //   return "Password must contain at least one number";
+      // }
+      // if (!/[@$!%*?&]/.test(password)) {
+      //   return "Password must contain at least one special character (@$!%*?&)";
+      // }
       return "";
     };
     const error = getPasswordError(password);
