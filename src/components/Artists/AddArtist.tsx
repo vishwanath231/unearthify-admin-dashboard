@@ -3,6 +3,8 @@ import { useState, useRef, ChangeEvent, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router";
 import toast from "react-hot-toast";
 import { createArtistApi, updateArtistApi } from "../../api/artistApi";
+import { State, City } from "country-state-city";
+import Select from "react-select";
 
 type Artist = {
   _id: string;
@@ -14,6 +16,8 @@ type Artist = {
   bio: string;
   image: string;
 };
+const DEFAULT_ARTIST_IMAGE =
+  "https://res.cloudinary.com/ddni4sjyo/image/upload/v1770180830/default%20image/person_kjmhx8.jpg";
 
 function AddArtist() {
   const navigate = useNavigate();
@@ -26,13 +30,44 @@ function AddArtist() {
   const [artForm, setArtForm] = useState("");
   const [city, setCity] = useState("");
   const [stateName, setStateName] = useState("");
-  const [country, setCountry] = useState("");
+  const [country, setCountry] = useState("India");
   const [bio, setBio] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imageError, setImageError] = useState("");
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [states, setStates] = useState<any[]>([]);
+  const [cities, setCities] = useState<any[]>([]);
+  const cityOptions = cities.map((c) => ({
+    label: c.name,
+    value: c.name,
+  }));
+  const stateOptions = states.map((s) => ({
+    label: s.name,
+    value: s.name,
+    isoCode: s.isoCode,
+  }));
+
+  //Loading the states in India
+
+  useEffect(() => {
+    const indianStates = State.getStatesOfCountry("IN");
+    setStates(indianStates);
+  }, []);
+
+  const handleStateChange = (stateName: string) => {
+    setStateName(stateName);
+    setCity("");
+
+    const stateObj = states.find((s) => s.name === stateName);
+    if (stateObj) {
+      const cityList = City.getCitiesOfState("IN", stateObj.isoCode);
+      setCities(cityList);
+    } else {
+      setCities([]);
+    }
+  };
 
   const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -84,15 +119,22 @@ function AddArtist() {
       formData.append("country", country);
       formData.append("bio", bio);
 
+      // if (imageFile) {
+      //   formData.append("image", imageFile);
+      // }
       if (imageFile) {
+        // user selected image
         formData.append("image", imageFile);
+      } else if (!editArtist) {
+        // creating artist without image → use default
+        formData.append("imageUrl", DEFAULT_ARTIST_IMAGE);
       }
 
       if (editArtist) {
         await updateArtistApi(editArtist._id, formData);
         toast.success("Artist updated");
       } else {
-        if (!imageFile) return toast.error("Image is required");
+        // if (!imageFile) return toast.error("Image is required");
         await createArtistApi(formData);
         toast.success("Artist created");
       }
@@ -110,11 +152,19 @@ function AddArtist() {
     if (editArtist) {
       setName(editArtist.name || "");
       setArtForm(editArtist.artForm || "");
-      setCity(editArtist.city || "");
       setStateName(editArtist.state || "");
-      setCountry(editArtist.country || "");
+      setCity(editArtist.city || "");
+      setCountry("India");
       setBio(editArtist.bio || "");
       setExistingImage(editArtist.image);
+
+      // preload cities for edit
+      const stateObj = State.getStatesOfCountry("IN").find(
+        (s) => s.name === editArtist.state,
+      );
+      if (stateObj) {
+        setCities(City.getCitiesOfState("IN", stateObj.isoCode));
+      }
     }
   }, [editArtist]);
 
@@ -155,35 +205,71 @@ function AddArtist() {
           </div>
 
           <div>
-            <label className="text-sm font-medium">City</label>
+            <label className="text-sm font-medium">Country</label>
             <input
-              value={city}
-              required
-              onChange={(e) => setCity(e.target.value)}
-              className="input mt-1"
-              placeholder="Enter artist city"
+              value={country}
+              readOnly
+              className="input mt-1 bg-gray-100 cursor-not-allowed"
             />
           </div>
 
           <div>
             <label className="text-sm font-medium">State</label>
-            <input
-              value={stateName}
-              required
-              onChange={(e) => setStateName(e.target.value)}
-              className="input mt-1"
-              placeholder="Enter artist state"
+
+            <Select
+              options={stateOptions}
+              value={
+                stateName
+                  ? stateOptions.find((s) => s.value === stateName)
+                  : null
+              }
+              placeholder="Select State"
+              onChange={(option) => {
+                if (!option) return;
+                setStateName(option.value);
+                setCity("");
+                const cityList = City.getCitiesOfState("IN", option.isoCode);
+                setCities(cityList);
+              }}
+              styles={{
+                menu: (base: any) => ({
+                  ...base,
+                  maxHeight: 200,
+                  borderRadius: "8px",
+                  overflowY: "auto",
+                  zIndex: 50,
+                }),
+                control: (base: any) => ({
+                  ...base,
+                  minHeight: "44px",
+                  borderRadius: "8px",
+                })
+              }}
             />
           </div>
 
           <div>
-            <label className="text-sm font-medium">Country</label>
-            <input
-              value={country}
-              required
-              onChange={(e) => setCountry(e.target.value)}
-              className="input mt-1"
-              placeholder="Enter artist country"
+            <label className="text-sm font-medium">City</label>
+            <Select
+              options={cityOptions}
+              value={city ? { label: city, value: city } : null}
+              onChange={(option) => setCity(option?.value || "")}
+              placeholder="Select City"
+              isDisabled={!stateName}
+              styles={{
+                menu: (base) => ({
+                  ...base,
+                  maxHeight: 200,
+                  borderRadius: "8px",
+                  overflowY: "auto",
+                  zIndex: 50,
+                }),
+                control: (base) => ({
+                  ...base,
+                  borderRadius: "8px",
+                  minHeight: "44px",
+                }),
+              }}
             />
           </div>
         </div>
@@ -226,7 +312,8 @@ function AddArtist() {
               <button
                 type="button"
                 onClick={removeImage}
-                className="absolute -top-2 -right-2 bg-black text-white rounded-full w-6 h-6 flex items-center justify-center text-sm">
+                className="absolute -top-2 -right-2 bg-black text-white rounded-full w-6 h-6 flex items-center justify-center text-sm"
+              >
                 ×
               </button>
             </div>
@@ -243,7 +330,8 @@ function AddArtist() {
               <button
                 type="button"
                 onClick={removeImage}
-                className="absolute -top-2 -right-2 bg-black text-white rounded-full w-6 h-6 flex items-center justify-center text-sm">
+                className="absolute -top-2 -right-2 bg-black text-white rounded-full w-6 h-6 flex items-center justify-center text-sm"
+              >
                 ×
               </button>
             </div>
@@ -258,14 +346,16 @@ function AddArtist() {
       <div className="flex justify-end gap-3">
         <button
           onClick={() => navigate("/artists")}
-          className="px-5 py-2 bg-[#83261D] text-white rounded-lg">
+          className="px-5 py-2 bg-[#83261D] text-white rounded-lg"
+        >
           Cancel
         </button>
 
         <button
           onClick={handleSubmit}
           disabled={isSubmitting}
-          className={`px-5 py-2 rounded-lg text-white ${isSubmitting ? "bg-gray-400 cursor-not-allowed" : "bg-[#83261D]"}`}>
+          className={`px-5 py-2 rounded-lg text-white ${isSubmitting ? "bg-gray-400 cursor-not-allowed" : "bg-[#83261D]"}`}
+        >
           {isSubmitting
             ? editArtist
               ? "Updating..."

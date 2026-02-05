@@ -128,7 +128,7 @@ export default function SignInForm() {
               </div>
             </div>
 
-            <div className="flex items-center justify-between">
+            {/* <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <Checkbox checked={isChecked} onChange={setIsChecked} />
                 <span className="text-sm text-gray-700">Keep me logged in</span>
@@ -137,7 +137,7 @@ export default function SignInForm() {
               <Link to="/reset-password" className="text-sm text-[#83261D]">
                 Forgot password?
               </Link>
-            </div>
+            </div> */}
 
             <Button className="w-full" size="sm" disabled={loading}>
               {loading ? "Signing in..." : "Sign in"}

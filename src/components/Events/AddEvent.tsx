@@ -27,13 +27,14 @@ export default function AddEvent() {
   const fileRef = useRef<HTMLInputElement | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
 
-  const [form, setForm] = useState({
-    title: "",
-    description: "",
-    date: "",
-    location: "",
-    categories: "",
-  });
+ const [form, setForm] = useState({
+  title: "",
+  description: "",
+  date: "",
+  location: "",
+  categories: "",
+  // recurrence: "none", //recurrence added 
+});
 
   const [existingImage, setExistingImage] = useState<string | undefined>();
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -45,12 +46,14 @@ export default function AddEvent() {
   useEffect(() => {
     if (editEvent) {
       setForm({
-        title: editEvent.title,
-        description: editEvent.description,
-        date: editEvent.date,
-        location: editEvent.location,
-        categories: editEvent.categories,
-      });
+      title: editEvent.title,
+      description: editEvent.description,
+      date: editEvent.date,
+      location: editEvent.location,
+      categories: editEvent.categories,
+      // recurrence: (editEvent as any).recurrence || "none",
+    });
+
       setExistingImage(editEvent.image);
       setPreviewUrl(editEvent.image || null);
     }
@@ -155,6 +158,8 @@ export default function AddEvent() {
       formData.append("date", date);
       formData.append("location", location);
       formData.append("categories", categories);
+      // formData.append("recurrence", form.recurrence);
+
 
       if (imageFile) {
         formData.append("image", imageFile);
@@ -232,6 +237,21 @@ export default function AddEvent() {
               className="input"
             />
           </div>
+          {/* <div className="flex flex-col gap-1">
+            <label className="text-sm font-medium text-gray-700">
+              Recurring Event
+            </label>
+            <select
+              name="recurrence"
+              value={form.recurrence}
+              onChange={handleChange}
+              className="input bg-white">
+              <option value="none">One-time</option>
+              <option value="monthly">Every Month</option>
+              <option value="yearly">Every Year</option>
+            </select>
+          </div> */}
+
 
           <div className="flex flex-col gap-1">
             <label className="text-sm font-medium text-gray-700">
