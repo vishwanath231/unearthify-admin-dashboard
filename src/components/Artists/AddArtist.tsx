@@ -56,18 +56,18 @@ function AddArtist() {
     setStates(indianStates);
   }, []);
 
-  const handleStateChange = (stateName: string) => {
-    setStateName(stateName);
-    setCity("");
+  // const handleStateChange = (stateName: string) => {
+  //   setStateName(stateName);
+  //   setCity("");
 
-    const stateObj = states.find((s) => s.name === stateName);
-    if (stateObj) {
-      const cityList = City.getCitiesOfState("IN", stateObj.isoCode);
-      setCities(cityList);
-    } else {
-      setCities([]);
-    }
-  };
+  //   const stateObj = states.find((s) => s.name === stateName);
+  //   if (stateObj) {
+  //     const cityList = City.getCitiesOfState("IN", stateObj.isoCode);
+  //     setCities(cityList);
+  //   } else {
+  //     setCities([]);
+  //   }
+  // };
 
   const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
