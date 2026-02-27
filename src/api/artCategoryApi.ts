@@ -8,6 +8,9 @@ export const createCategoryApi = (data: FormData) =>
 export const deleteCategoryApi = (id: string) =>
   api.delete(`/categories/${id}`);
 
+export const updateCategoryApi = (id: string, data: FormData) =>
+  api.put(`/categories/${id}`, data);
+
 export const updateArtTypeApi = (
   categoryId: string,
   artTypeId: string,

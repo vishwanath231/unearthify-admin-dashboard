@@ -47,7 +47,7 @@ export default function EcommerceMetrics() {
         {
           label: "Total Artists",
           value: stats.artists,
-          icon: <MdOutlineDashboard  className="w-5 h-5" />,
+          icon: <MdOutlineDashboard className="w-4 h-4 sm:w-5 sm:h-5" />,
           color: "#893128",
           bgColor: "bg-[#893128]",
           iconColor: "text-white",
@@ -55,7 +55,7 @@ export default function EcommerceMetrics() {
         {
           label: "Total Categories",
           value: stats.categories,
-          icon: <MdOutlineCategory  className="w-5 h-5" />,
+          icon: <MdOutlineCategory className="w-4 h-4 sm:w-5 sm:h-5" />,
           color: "#893128",
           bgColor: "bg-[#893128]",
           iconColor: "text-white",
@@ -63,7 +63,7 @@ export default function EcommerceMetrics() {
         {
           label: "Total Art Types",
           value: stats.artTypes,
-          icon: <LuPalette className="w-5 h-5" />,
+          icon: <LuPalette className="w-4 h-4 sm:w-5 sm:h-5" />,
           color: "#893128",
           bgColor: "bg-[#893128]",
           iconColor: "text-white",
@@ -71,7 +71,7 @@ export default function EcommerceMetrics() {
         {
           label: "Total Events",
           value: stats.events,
-          icon: <BsCalendar4Event className="w-5 h-5" />,
+          icon: <BsCalendar4Event className="w-4 h-4 sm:w-5 sm:h-5" />,
           color: "#893128",
           bgColor: "bg-[#893128]",
           iconColor: "text-white",
@@ -79,7 +79,7 @@ export default function EcommerceMetrics() {
         {
           label: "Total Contributions",
           value: stats.contributions,
-          icon: <HiOutlineUsers  className="w-5 h-5" />,
+          icon: <HiOutlineUsers className="w-4 h-4 sm:w-5 sm:h-5" />,
           color: "#893128",
           bgColor: "bg-[#893128]",
           iconColor: "text-white",
@@ -87,7 +87,7 @@ export default function EcommerceMetrics() {
         {
           label: "Registrations",
           value: stats.applications,
-          icon: <FaWpforms className="w-5 h-5" />,
+          icon: <FaWpforms className="w-4 h-4 sm:w-5 sm:h-5" />,
           color: "#893128",
           bgColor: "bg-[#893128]",
           iconColor: "text-white",
@@ -96,78 +96,93 @@ export default function EcommerceMetrics() {
     : [];
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 md:py-8">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+        {/* Header - Responsive */}
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 mb-1 sm:mb-2">
             Dashboard Overview
           </h1>
-          <p className="text-gray-600">
+          <p className="text-xs sm:text-sm md:text-base text-gray-600">
             Monitor your platform's key metrics at a glance
           </p>
         </div>
 
         {loading && (
-          <div className="flex items-center justify-center py-20">
+          <div className="flex items-center justify-center py-12 sm:py-16 md:py-20">
             <div className="text-center">
-              <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-gray-200 border-t-blue-600 mb-4"></div>
-              <p className="text-gray-600 font-medium">Loading dashboard...</p>
+              <div className="inline-block animate-spin rounded-full h-8 w-8 sm:h-10 sm:w-10 md:h-12 md:w-12 border-3 sm:border-4 border-gray-200 border-t-[#893128] mb-3 sm:mb-4"></div>
+              <p className="text-xs sm:text-sm md:text-base text-gray-600 font-medium">Loading dashboard...</p>
             </div>
           </div>
         )}
 
         {!loading && stats && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          /* Metrics Grid - Responsive */
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-5 lg:gap-6">
             {metrics.map((metric, index) => (
               <div
                 key={metric.label}
-                className="bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 overflow-hidden group"
+                className="bg-white rounded-lg sm:rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 overflow-hidden group"
                 style={{
                   animation: `fadeInUp 0.5s ease-out ${index * 0.1}s both`,
                 }}>
+                {/* Colored Top Bar */}
                 <div
-                  className={"h-2"}
+                  className="h-1.5 sm:h-2"
                   style={{ background: metric.color }}></div>
-                <div className="p-6">
-                  <div className="flex items-start justify-between mb-4">
+                
+                {/* Card Content - Responsive */}
+                <div className="p-4 sm:p-5 md:p-6">
+                  <div className="flex items-start justify-between mb-3 sm:mb-4">
+                    {/* Icon Container */}
                     <div
-                      className={`${metric.bgColor} p-3 rounded-lg group-hover:scale-110 transition-transform duration-300`}>
+                      className={`${metric.bgColor} p-2 sm:p-2.5 md:p-3 rounded-lg sm:rounded-xl group-hover:scale-110 transition-transform duration-300`}>
                       <div className={metric.iconColor}>{metric.icon}</div>
                     </div>
+                    
+                    {/* Value Container */}
                     <div className="text-right">
-                      <p className="text-sm font-medium text-gray-500 mb-1">
+                      <p className="text-[10px] sm:text-xs md:text-sm font-medium text-gray-500 mb-0.5 sm:mb-1">
                         {metric.label}
                       </p>
+                      
                       {metric.label === "Registrations" ? (
-                        <div className="flex justify-between items-center mt-2">
+                        /* Registrations Split View - Responsive */
+                        <div className="flex items-center gap-2 sm:gap-3 md:gap-4 mt-1 sm:mt-2">
+                          {/* Art Form Registrations */}
                           <div className="text-left">
-                            <p className="text-xs text-gray-500">Art Form</p>
-                            <p className="text-2xl font-bold text-amber-900">
+                            <p className="text-[8px] sm:text-[10px] md:text-xs text-gray-500 whitespace-nowrap">Art Form</p>
+                            <p className="text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl font-bold text-amber-900">
                               {stats.applications.artForms}
                             </p>
                           </div>
 
-                          <div className="h-10 w-[1px] bg-gray-200 mx-4"></div>
+                          {/* Vertical Divider */}
+                          <div className="h-8 sm:h-10 w-px bg-gray-200"></div>
 
+                          {/* Event Registrations */}
                           <div className="text-right">
-                            <p className="text-xs text-gray-500">Events</p>
-                            <p className="text-2xl font-bold text-amber-900">
+                            <p className="text-[8px] sm:text-[10px] md:text-xs text-gray-500 whitespace-nowrap">Events</p>
+                            <p className="text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl font-bold text-amber-900">
                               {stats.applications.events}
                             </p>
                           </div>
                         </div>
                       ) : (
-                        <p className="text-3xl font-bold text-amber-900">
+                        /* Single Value Display */
+                        <p className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-amber-900">
                           {Number(metric.value || 0).toLocaleString()}
                         </p>
                       )}
                     </div>
                   </div>
-                  <div className="mt-4 pt-4 border-t border-gray-100 flex justify-end">
+                  
+                  {/* Footer with Refresh Button - Responsive */}
+                  <div className="mt-3 sm:mt-4 pt-2 sm:pt-3 md:pt-4 border-t border-gray-100 flex justify-end">
                     <button
                       onClick={loadDashboard}
-                      className="text-amber-900 font-medium transition-colors">
+                      className="text-[10px] sm:text-xs md:text-sm text-amber-900 font-medium hover:text-amber-700 transition-colors">
                       Refresh
                     </button>
                   </div>
@@ -178,32 +193,21 @@ export default function EcommerceMetrics() {
         )}
 
         {!loading && !stats && (
-          <div className="bg-white rounded-xl shadow-sm p-12 text-center">
-            <div className="text-gray-400 mb-4">
-              <BoxIconLine className="w-16 h-16 mx-auto" />
+          /* Empty State - Responsive */
+          <div className="bg-white rounded-lg sm:rounded-xl shadow-sm p-6 sm:p-8 md:p-10 lg:p-12 text-center">
+            <div className="text-gray-400 mb-3 sm:mb-4">
+              <BoxIconLine className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 mx-auto" />
             </div>
-            <p className="text-gray-600 mb-4">No data available</p>
+            <p className="text-sm sm:text-base text-gray-600 mb-3 sm:mb-4">No data available</p>
             <button
               onClick={loadDashboard}
-              className="px-6 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors">
+              className="px-4 sm:px-5 md:px-6 py-1.5 sm:py-2 bg-amber-600 text-white rounded-lg text-xs sm:text-sm md:text-base hover:bg-amber-700 transition-colors">
               Retry
             </button>
           </div>
         )}
       </div>
 
-      <style>{`
-        @keyframes fadeInUp {
-          from {
-            opacity: 0;
-            transform: translateY(20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-      `}</style>
     </div>
   );
 }
