@@ -16,15 +16,18 @@ import EventsLists from "./pages/Events/EventsLists";
 import AddEvents from "./pages/Events/AddEvents";
 import ContibutionLists from "./pages/Contibutions/ContributionLists";
 import { useEffect } from "react";
-import { autoLogout, startIdleLogout } from "./pages/AuthPages/Auth";
+import { autoLogout } from "./pages/AuthPages/Auth";
 import ApplicationsList from "./pages/Applications/ApplicationsList";
 import EventApplicationsList from "./pages/Applications/EventApplicationsList";
 import ArtistsLists from "./pages/Artists/ArtistsList";
+import ArtistSubmissions from "./pages/Artists/ArtistSubmissions";
+import ArtistRejections from "./pages/Artists/ArtistRejections";
+import DeletedArtists from "./pages/Artists/DeletedArtists";
 
 export default function App() {
   useEffect(() => {
-    autoLogout(); // token expiry
-    startIdleLogout(10); // idle 10 min
+    autoLogout();
+    // startIdleLogout(10);
   }, []);
 
   return (
@@ -46,6 +49,9 @@ export default function App() {
             {/* <Route path="/profile" element={<UserProfiles />} /> */}
             <Route path="/artists" element={<ArtistsLists />} />
             <Route path="/artists/add" element={<AddArtists />} />
+            <Route path="/artists/artist-submissions" element={<ArtistSubmissions />} />
+            <Route path="/artists/artist-rejections" element={<ArtistRejections />} />
+            <Route path="/artists/deleted" element={<DeletedArtists />} />
 
             {/* Art Forms */}
             <Route path="/categories" element={<CategoriesList />} />
@@ -61,11 +67,13 @@ export default function App() {
             <Route path="/contributions" element={<ContibutionLists />} />
 
             {/* Art Form Applications */}
-            <Route path="/applications" element={<ApplicationsList/>} />
+            <Route path="/applications" element={<ApplicationsList />} />
 
             {/* Event Applications */}
-            <Route path="/eventApplications" element={<EventApplicationsList/>} />
- 
+            <Route
+              path="/eventApplications"
+              element={<EventApplicationsList />}
+            />
           </Route>
 
           {/* Auth Layout */}

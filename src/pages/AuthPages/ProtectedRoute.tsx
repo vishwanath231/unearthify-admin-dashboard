@@ -11,7 +11,7 @@ export default function ProtectedRoute({ children }: { children: JSX.Element }) 
     
     if (!token || isTokenExpired(token)) {
       logout();
-      toast.error("Session expired. Please login again.");
+      // toast.error("Session expired. Please login again.");
       setValid(false);
       return;
     }

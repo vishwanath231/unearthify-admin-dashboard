@@ -158,33 +158,35 @@ export default function CategoryList() {
   }
 
   return (
-    <div className="p-6 bg-white rounded-xl shadow">
+    <div className="p-3 sm:p-4 md:p-5 lg:p-6 bg-white rounded-lg sm:rounded-xl shadow overflow-x-hidden">
       {/* HEADER */}
-      <div className="flex items-center justify-end mb-4">
+      <div className="flex items-center justify-end mb-3 sm:mb-4">
         <button
           onClick={() => navigate("/categories/add")}
-          className="bg-[#83261D] text-white px-4 py-2 rounded-lg">
+          className="bg-[#83261D] text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm whitespace-nowrap">
           + Add Categories
         </button>
       </div>
 
-      <hr className="my-3" />
+      <hr className="my-2 sm:my-3" />
 
       {/* SEARCH + FILTER */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-5">
-        <div className="flex gap-4">
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 sm:gap-4 mb-4 sm:mb-5">
+        {/* Left Section - Search and Filter Chips */}
+        <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto flex-1">
+          {/* Search Input */}
           <input
             type="text"
             placeholder="Search by name or description..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="border px-3 py-2 rounded-lg w-full sm:w-72 focus:ring-2 focus:ring-[#83261D] outline-none"
+            className="border px-3 py-2 rounded-lg w-full sm:w-72 text-xs sm:text-sm focus:ring-2 focus:ring-[#83261D] outline-none"
           />
 
+          {/* Applied Category Filter Chip */}
           {appliedCategory && (
-            <div className="flex gap-2 bg-[#F8E7DC] text-[#83261D] px-3 py-1.5 rounded-full text-sm border border-red-200">
+            <div className="flex items-center gap-2 bg-[#F8E7DC] text-[#83261D] px-3 py-1.5 rounded-full text-xs sm:text-sm border border-red-200 w-fit">
               <span>Category: {appliedCategory}</span>
-
               <button
                 onClick={() => {
                   setAppliedCategory("");
@@ -197,20 +199,24 @@ export default function CategoryList() {
           )}
         </div>
 
-        <div className="flex items-center gap-2 relative">
+        {/* Right Section - Action Buttons */}
+        <div className="flex items-center gap-2 relative self-end lg:self-auto">
+          {/* Clear Filter Button */}
           <button
             onClick={clearFilters}
-            className="px-4 py-2 text-sm text-[#83261D] border border-red-200 rounded-lg hover:bg-[#F8E7DC] whitespace-nowrap">
+            className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm text-[#83261D] border border-red-200 rounded-lg hover:bg-[#F8E7DC] whitespace-nowrap">
             Clear Filter
           </button>
 
+          {/* Filter Button */}
           <button
             onClick={() => setFilterOpen(!filterOpen)}
-            className="flex items-center gap-2 border px-4 py-2 rounded-xl w-fit filter-btn">
-            <PiSlidersHorizontalBold />
+            className="flex items-center gap-1 sm:gap-2 border px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm filter-btn whitespace-nowrap">
+            <PiSlidersHorizontalBold size={14} />
             Filter
           </button>
 
+          {/* Filter Dropdown */}
           {filterOpen && (
             <div className="absolute top-full right-0 mt-2 w-72 bg-white border rounded-xl shadow-xl p-4 z-30 filter-box">
               <p className="text-sm font-semibold mb-2">Filter by Category</p>
@@ -218,7 +224,7 @@ export default function CategoryList() {
               <select
                 value={tempCategory}
                 onChange={(e) => setTempCategory(e.target.value)}
-                className="w-full border rounded-lg px-3 py-2 mb-4">
+                className="w-full border rounded-lg px-3 py-2 mb-4 text-sm">
                 <option value="">All Categories</option>
                 {categories.map((c) => (
                   <option key={c._id} value={c.name}>
@@ -248,170 +254,186 @@ export default function CategoryList() {
         </div>
       </div>
 
-      <hr className="my-3" />
+      <hr className="my-2 sm:my-3" />
 
       {loading && (
-        <div className="py-12 text-center text-gray-500 font-medium">
+        <div className="py-8 sm:py-12 text-center text-gray-500 font-medium text-sm sm:text-base">
           Loading categories...
         </div>
       )}
 
       {!loading && (
-        <table className="w-full text-sm border border-[#F1EEE7]">
-          <thead className="bg-white">
-            <tr>
-              <th className="p-3 text-left">Image</th>
+        /* Table - Responsive with horizontal scroll */
+        <div className="overflow-x-auto -mx-3 sm:mx-0">
+          <table className="w-full text-xs sm:text-sm border border-[#F1EEE7] min-w-[900px] lg:min-w-full">
+            <thead className="bg-white">
+              <tr>
+                <th className="p-2 sm:p-3 text-left">Image</th>
 
-              <th
-                className="p-3 text-left cursor-pointer select-none"
-                onClick={() => {
-                  setSortKey("name");
-                  setSortOrder(sortOrder === "asc" ? "desc" : "asc");
-                }}>
-                <div className="flex items-center gap-1">
-                  <span>Name</span>
-                  <div className="flex flex-col leading-none">
-                    <TiArrowSortedUp
-                      size={14}
-                      className={
-                        sortKey === "name" && sortOrder === "asc"
-                          ? "text-black"
-                          : "text-gray-300"
-                      }
-                    />
-                    <TiArrowSortedDown
-                      size={14}
-                      className={
-                        sortKey === "name" && sortOrder === "desc"
-                          ? "text-black"
-                          : "text-gray-300"
-                      }
-                    />
+                <th
+                  className="p-2 sm:p-3 text-left cursor-pointer select-none"
+                  onClick={() => {
+                    setSortKey("name");
+                    setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+                  }}>
+                  <div className="flex items-center gap-1">
+                    <span>Name</span>
+                    <div className="flex flex-col leading-none">
+                      <TiArrowSortedUp
+                        size={14}
+                        className={
+                          sortKey === "name" && sortOrder === "asc"
+                            ? "text-black"
+                            : "text-gray-300"
+                        }
+                      />
+                      <TiArrowSortedDown
+                        size={14}
+                        className={
+                          sortKey === "name" && sortOrder === "desc"
+                            ? "text-black"
+                            : "text-gray-300"
+                        }
+                      />
+                    </div>
                   </div>
-                </div>
-              </th>
+                </th>
 
-              <th className="p-3 text-left">Description</th>
+                <th className="p-2 sm:p-3 text-left">Description</th>
 
-              <th
-                className="p-3 text-left cursor-pointer select-none"
-                onClick={() => {
-                  setSortKey("count");
-                  setSortOrder(sortOrder === "asc" ? "desc" : "asc");
-                }}>
-                <div className="flex items-center gap-1">
-                  <span>Art Types</span>
-                  <div className="flex flex-col leading-none">
-                    <TiArrowSortedUp
-                      size={14}
-                      className={
-                        sortKey === "count" && sortOrder === "asc"
-                          ? "text-black"
-                          : "text-gray-300"
-                      }
-                    />
-                    <TiArrowSortedDown
-                      size={14}
-                      className={
-                        sortKey === "count" && sortOrder === "desc"
-                          ? "text-black"
-                          : "text-gray-300"
-                      }
-                    />
+                <th
+                  className="p-2 sm:p-3 text-left cursor-pointer select-none"
+                  onClick={() => {
+                    setSortKey("count");
+                    setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+                  }}>
+                  <div className="flex items-center gap-1">
+                    <span>Art Types</span>
+                    <div className="flex flex-col leading-none">
+                      <TiArrowSortedUp
+                        size={14}
+                        className={
+                          sortKey === "count" && sortOrder === "asc"
+                            ? "text-black"
+                            : "text-gray-300"
+                        }
+                      />
+                      <TiArrowSortedDown
+                        size={14}
+                        className={
+                          sortKey === "count" && sortOrder === "desc"
+                            ? "text-black"
+                            : "text-gray-300"
+                        }
+                      />
+                    </div>
                   </div>
-                </div>
-              </th>
+                </th>
 
-              <th className="p-3 text-right"></th>
-            </tr>
-          </thead>
+                <th className="p-2 sm:p-3 text-right"></th>
+              </tr>
+            </thead>
 
-          <tbody>
-            {filteredCategories.map((cat) => {
-              return (
-                <tr key={cat._id} className="border-t align-top">
-                  <td className="p-3">
-                    <img
-                      src={cat.image}
-                      className="w-12 h-12 rounded object-cover border"
-                    />
-                  </td>
+            <tbody>
+              {filteredCategories.map((cat) => {
+                return (
+                  <tr key={cat._id} className="border-t align-top">
+                    <td className="p-2 sm:p-3">
+                      <img
+                        src={cat.image}
+                        alt={cat.name}
+                        className="w-10 h-10 sm:w-12 sm:h-12 rounded object-cover border"
+                      />
+                    </td>
 
-                  <td className="p-3 font-medium">{cat.name}</td>
-                  <td className="p-3 text-gray-600 text-justify">{cat.description}</td>
+                    <td className="p-2 sm:p-3 font-medium text-xs sm:text-sm">
+                      {cat.name}
+                    </td>
+                    
+                    <td className="p-2 sm:p-3 text-gray-600 text-justify text-xs sm:text-sm max-w-xs">
+                      <p className="line-clamp-2">{cat.description}</p>
+                    </td>
 
-                  <td className="p-3 text-gray-700">
-                    {cat.artTypes.length > 0 ? (
-                      <div className="flex flex-wrap gap-2">
-                        {cat.artTypes.map((a) => (
-                          <span
-                            key={a._id}
-                            onClick={() => setViewArt({ ...a, category: cat })}
-                            className="px-2 py-1 bg-gray-100 rounded text-xs cursor-pointer hover:bg-gray-200">
-                            {a.name}
-                          </span>
-                        ))}
-                      </div>
-                    ) : (
-                      <span className="text-gray-400 text-xs">
-                        No art types
-                      </span>
-                    )}
-                  </td>
+                    <td className="p-2 sm:p-3 text-gray-700">
+                      {cat.artTypes.length > 0 ? (
+                        <div className="flex flex-wrap gap-1 sm:gap-2">
+                          {cat.artTypes.map((a) => (
+                            <span
+                              key={a._id}
+                              onClick={() => setViewArt({ ...a, category: cat })}
+                              className="px-1.5 sm:px-2 py-0.5 sm:py-1 bg-gray-100 rounded text-[10px] sm:text-xs cursor-pointer hover:bg-gray-200 whitespace-nowrap">
+                              {a.name}
+                            </span>
+                          ))}
+                        </div>
+                      ) : (
+                        <span className="text-gray-400 text-[10px] sm:text-xs">
+                          No art types
+                        </span>
+                      )}
+                    </td>
 
-                  <td className="p-3 text-right relative cat-menu">
-                    <button
-                      onClick={() =>
-                        setOpenMenu(openMenu === cat._id ? null : cat._id)
-                      }>
-                      <MoreVertical size={18} />
-                    </button>
+                    <td className="p-2 sm:p-3 text-right relative cat-menu">
+                      <button
+                        onClick={() =>
+                          setOpenMenu(openMenu === cat._id ? null : cat._id)
+                        }>
+                        <MoreVertical size={16} />
+                      </button>
 
-                    {openMenu === cat._id && (
-                      <div className="absolute right-3 top-9 w-28 bg-white border rounded-lg shadow z-20">
-                        <button
-                          onClick={() =>
-                            navigate("/categories/add", { state: cat })
-                          }
-                          className="block w-full px-4 py-2 text-left hover:bg-gray-100">
-                          Update
-                        </button>
+                      {openMenu === cat._id && (
+                        <div className="absolute right-2 sm:right-3 top-8 sm:top-9 w-24 sm:w-28 bg-white border rounded-lg shadow z-20 text-xs sm:text-sm">
+                          <button
+                            onClick={() =>
+                              navigate("/categories/add", { state: cat })
+                            }
+                            className="block w-full px-3 sm:px-4 py-1.5 sm:py-2 text-left hover:bg-gray-100">
+                            Update
+                          </button>
 
-                        <button
-                          disabled={deletingCategoryId === cat._id}
-                          onClick={() => handleDelete(cat._id)}
-                          className="block w-full px-4 py-2 text-left text-red-600 hover:bg-gray-100 disabled:opacity-50">
-                          {deletingCategoryId === cat._id
-                            ? "Deleting..."
-                            : "Delete"}
-                        </button>
-                      </div>
-                    )}
+                          <button
+                            disabled={deletingCategoryId === cat._id}
+                            onClick={() => handleDelete(cat._id)}
+                            className="block w-full px-3 sm:px-4 py-1.5 sm:py-2 text-left text-red-600 hover:bg-gray-100 disabled:opacity-50">
+                            {deletingCategoryId === cat._id
+                              ? "Deleting..."
+                              : "Delete"}
+                          </button>
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+
+              {filteredCategories.length === 0 && (
+                <tr>
+                  <td colSpan={5} className="p-4 text-center text-gray-400 text-xs sm:text-sm">
+                    No categories found
                   </td>
                 </tr>
-              );
-            })}
-
-            {filteredCategories.length === 0 && (
-              <tr>
-                <td colSpan={5} className="p-4 text-center text-gray-400">
-                  No categories found
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+              )}
+            </tbody>
+          </table>
+        </div>
       )}
 
+      {/* View Art Type Modal - Responsive */}
       {viewArt && (
-        <div className="fixed inset-0 soft-blur flex items-center justify-center z-50 px-4" onClick={() => setViewArt(null)}>
-          <div className="bg-white w-full max-w-xl max-h-[90vh] rounded-[32px] overflow-y-auto relative shadow-[0_30px_70px_rgba(0,0,0,0.5)] border border-white/20 animate-in zoom-in-95 duration-300" onClick={(e) => e.stopPropagation()}>
+        <div 
+          className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50 p-3 sm:p-4" 
+          onClick={() => setViewArt(null)}>
+          <div 
+            className="bg-white w-full max-w-[95%] sm:max-w-xl max-h-[90vh] rounded-xl sm:rounded-2xl md:rounded-[32px] overflow-y-auto relative shadow-xl border border-white/20 animate-in zoom-in-95 duration-300" 
+            onClick={(e) => e.stopPropagation()}>
+            
+            {/* Close Button */}
             <button
               onClick={() => setViewArt(null)}
-              className="absolute top-5 right-5 z-50 bg-black hover:bg-[#83261D] backdrop-blur-md text-white rounded-full w-10 h-10 flex items-center justify-center transition-all duration-300 shadow-xl group border border-white/20">
+              className="absolute top-3 sm:top-5 right-3 sm:right-5 z-50 bg-black hover:bg-[#83261D] backdrop-blur-md text-white rounded-full w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center transition-all duration-300 shadow-xl group border border-white/20">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5 group-hover:rotate-90 transition-transform"
+                className="h-4 w-4 sm:h-5 sm:w-5 group-hover:rotate-90 transition-transform"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor">
@@ -424,7 +446,8 @@ export default function CategoryList() {
               </svg>
             </button>
 
-            <div className="relative h-80 w-full overflow-hidden bg-gray-100">
+            {/* Image Section */}
+            <div className="relative h-48 sm:h-64 md:h-80 w-full overflow-hidden bg-gray-100">
               <img
                 src={viewArt.image}
                 alt={viewArt.name}
@@ -432,41 +455,46 @@ export default function CategoryList() {
               />
             </div>
 
-            <div className="px-10 pb-2 pt-8 relative">
+            {/* Content Section */}
+            <div className="px-4 sm:px-6 md:px-10 pb-4 sm:pb-6 md:pb-8 pt-4 sm:pt-6 md:pt-8">
               {/* Label */}
-              <span className="inline-block mb-2 text-xs font-bold tracking-widest text-[#83261D] uppercase">
+              <span className="inline-block mb-1 sm:mb-2 text-[10px] sm:text-xs font-bold tracking-widest text-[#83261D] uppercase">
                 Art Type
               </span>
 
               {/* Title */}
-              <h2 className="text-2xl font-bold leading-none mb-6">
+              <h2 className="text-xl sm:text-2xl font-bold leading-none mb-3 sm:mb-4 md:mb-6">
                 {viewArt.name}
               </h2>
 
-              {/* Description */}
-              <span className="inline-block mb-2 text-xl font-bold tracking-widest text-[#83261D] uppercase">
+              {/* Description Label */}
+              <span className="inline-block mb-1 sm:mb-2 text-sm sm:text-base md:text-xl font-bold tracking-widest text-[#83261D] uppercase">
                 Type Description
               </span>
+              
+              {/* Description Text */}
               <div className="relative">
-                <p className="text-base font-normal leading-relaxed text-justify text-gray-800 max-w-[90%]">
+                <p className="text-xs sm:text-sm md:text-base font-normal leading-relaxed text-justify text-gray-800">
                   {viewArt.description}
                 </p>
               </div>
             </div>
-            <div className="flex justify-end gap-3 m-8">
+
+            {/* Action Buttons */}
+            <div className="flex justify-end gap-2 sm:gap-3 m-4 sm:m-6 md:m-8">
               <button
                 onClick={() =>
                   navigate("/categories/add", {
                     state: { mode: "editArtType", data: viewArt },
                   })
                 }
-                className="px-4 py-2 bg-[#83261D] text-white rounded-lg">
+                className="px-3 sm:px-4 py-1.5 sm:py-2 bg-[#83261D] text-white rounded-lg text-xs sm:text-sm">
                 Update
               </button>
               <button
                 disabled={deletingArtTypeId === viewArt._id}
                 onClick={() => handleDeleteType()}
-                className="px-4 py-2 border rounded-lg text-red-600 disabled:opacity-50">
+                className="px-3 sm:px-4 py-1.5 sm:py-2 border rounded-lg text-red-600 text-xs sm:text-sm disabled:opacity-50">
                 {deletingArtTypeId === viewArt._id ? "Deleting..." : "Delete"}
               </button>
             </div>
